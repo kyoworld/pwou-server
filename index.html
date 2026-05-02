@@ -5,90 +5,107 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PARALLEL WORLD OBSERVATION UNIT</title>
 <style>
-:root {
-  --printer-w: 380px;
-  --upper-h: 44px;
-  --lower-h: 34px;
-  --zone-h:  320px;
-}
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   background:#000; color:#fff;
   font-family:'Courier New',monospace;
   min-height:100vh;
   display:flex; flex-direction:column; align-items:center;
-  padding:48px 20px 60px;
+  padding:60px 20px 80px;
 }
 
-.header { text-align:center; margin-bottom:36px; }
+.header { text-align:center; margin-bottom:48px; }
 .header h1 { font-size:10px; letter-spacing:4px; opacity:.4; margin-bottom:6px; }
 .header h2 { font-size:9px; letter-spacing:3px; opacity:.25; }
 
-.printer-scene {
+/* ── 프린터 오브젝트 ── */
+.printer-wrap {
   position: relative;
-  width: 100%;
-  max-width: var(--printer-w);
-  height: calc(var(--upper-h) + var(--zone-h));
-  margin-bottom: 32px;
+  width: 300px;
+  margin-bottom: 48px;
 }
 
-.printer-upper {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: var(--upper-h);
+/* 본체 */
+.printer-body {
+  width: 300px;
+  height: 300px;
   background: #EDE8DF;
-  border-radius: 6px 6px 0 0;
-  padding: 13px 18px 0;
-  z-index: 3;
+  border-radius: 10px 10px 4px 4px;
+  position: relative;
+  /* 입체감: 오른쪽면, 아랫면 */
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.8),
-    4px 0 0 #D4CFC6,
-    -4px 0 0 #D4CFC6;
+    /* 오른쪽 면 */
+    6px 0 0 #D8D2C8,
+    /* 아랫면 */
+    0 8px 0 #CCC6BC,
+    /* 오른쪽 아랫 모서리 */
+    6px 8px 0 #C2BCB2,
+    /* 전체 그림자 */
+    8px 16px 32px rgba(0,0,0,0.7),
+    2px 4px 10px rgba(0,0,0,0.4),
+    /* 상단 하이라이트 */
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  overflow: hidden;
 }
-.printer-face {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 9px;
-}
-.printer-brand { font-size:8px; letter-spacing:3px; color:#A09880; }
 
+/* 슬롯 */
 .printer-slot {
-  height: 6px;
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 68%;
+  height: 7px;
   background: #1A1714;
   border-radius: 2px;
   box-shadow:
-    inset 0 3px 6px #000,
-    inset 0 -1px 2px #333,
-    0 1px 0 rgba(255,255,255,0.2);
-  margin: 0 -18px;
+    inset 0 3px 6px rgba(0,0,0,0.95),
+    inset 0 -1px 2px rgba(0,0,0,0.5),
+    0 1px 0 rgba(255,255,255,0.15);
+  z-index: 10;
 }
 
-.printer-lower {
+/* 브랜드 */
+.printer-brand {
   position: absolute;
-  top: var(--upper-h);
-  left: 0; right: 0;
-  height: var(--lower-h);
-  background: #EDE8DF;
-  border-radius: 0 0 6px 6px;
-  z-index: 1;
-  box-shadow:
-    4px 0 0 #D4CFC6,
-    -4px 0 0 #D4CFC6,
-    0 8px 0 #C8C2B8,
-    0 9px 0 #BBB5AA,
-    0 16px 32px rgba(0,0,0,0.6);
-}
-
-.receipt-zone {
-  position: absolute;
-  top: var(--upper-h);
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 82%;
-  height: var(--zone-h);
+  font-size: 7px;
+  letter-spacing: 3px;
+  color: #A09880;
+  white-space: nowrap;
+}
+
+/* 다리 */
+.printer-legs {
+  position: absolute;
+  bottom: -16px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 36px;
+}
+.printer-leg {
+  width: 20px;
+  height: 16px;
+  background: #CCC6BC;
+  border-radius: 0 0 5px 5px;
+  box-shadow:
+    3px 0 0 #B8B2A8,
+    0 4px 8px rgba(0,0,0,0.5);
+}
+
+/* 영수증 테이프 */
+.receipt-zone {
+  position: absolute;
+  top: 35px; /* 슬롯 바로 아래 */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 62%;
+  height: calc(300px - 35px);
   overflow: hidden;
-  z-index: 2;
+  z-index: 5;
 }
 
 .receipt-tape {
@@ -96,94 +113,55 @@ body {
   background: #fff;
   display: flex;
   flex-direction: column;
-  transition: margin-top 0.55s cubic-bezier(0.33, 1, 0.68, 1);
-  box-shadow: 2px 4px 18px rgba(0,0,0,.45), -1px 0 6px rgba(0,0,0,.15);
+  transition: margin-top 0.6s cubic-bezier(0.33, 1, 0.68, 1);
+  box-shadow:
+    2px 0 8px rgba(0,0,0,0.3),
+    -2px 0 8px rgba(0,0,0,0.15),
+    0 6px 16px rgba(0,0,0,0.4);
 }
 
+/* 영수증 항목 */
 .receipt-entry {
-  padding: 8px 13px;
-  border-bottom: 1px dashed #ddd;
+  padding: 10px 12px;
+  border-bottom: 1px dashed #ccc;
   flex-shrink: 0;
-  animation: feedIn 0.38s ease-out;
+  animation: feedIn 0.4s ease-out;
 }
 .receipt-entry:last-child { border-bottom: none; }
 
 @keyframes feedIn {
-  from { opacity:0; transform:translateY(-10px) scaleY(0.6); transform-origin:top; }
-  to   { opacity:1; transform:translateY(0) scaleY(1); }
+  from { opacity:0; transform:translateY(-8px); }
+  to   { opacity:1; transform:translateY(0); }
 }
 
-.e-num  { font-size:8px; color:#bbb; letter-spacing:1px; margin-bottom:1px; }
-.e-meta { font-size:9px; color:#888; margin-bottom:3px; line-height:1.45; }
-.e-desc { font-size:11px; color:#111; line-height:1.55; }
-
-/* ── 프린터 박스 오브젝트 ── */
-.printer-box {
-  width: 280px;
-  height: 280px;
-  background: #EDE8DF;
-  border-radius: 8px;
-  padding: 28px 24px 22px;
-  margin-bottom: 40px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.9),
-    4px 0 0 #D4CFC6,
-    -4px 0 0 #D4CFC6,
-    0 8px 0 #C8C2B8,
-    0 9px 0 #BBB5AA,
-    0 10px 0 #AEA89D,
-    6px 14px 0 #A8A297,
-    0 20px 40px rgba(0,0,0,0.65),
-    0 4px 12px rgba(0,0,0,0.35);
+.e-divider {
+  font-size: 9px;
+  color: #bbb;
+  letter-spacing: 0;
+  margin: 2px 0;
+  line-height: 1.2;
 }
-
-/* 바닥 다리 4개 */
-.printer-box::before,
-.printer-box::after {
-  content: '';
-  position: absolute;
-  bottom: -14px;
-  width: 18px;
-  height: 14px;
-  background: #C0BAB0;
-  border-radius: 0 0 4px 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+.e-title {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #999;
+  margin: 3px 0 2px;
 }
-.printer-box::before { left: 32px; }
-.printer-box::after  { right: 32px; }
-
-.printer-box-slot {
-  width: 68%;
-  height: 7px;
-  background: #1A1714;
-  border-radius: 3px;
-  box-shadow:
-    inset 0 3px 6px rgba(0,0,0,0.9),
-    inset 0 1px 2px rgba(0,0,0,0.6),
-    0 1px 0 rgba(255,255,255,0.25);
-  margin-bottom: 12px;
+.e-line {
+  font-size: 9px;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
-
-.printer-box-brand {
-  font-size: 7px;
-  letter-spacing: 3px;
-  color: #A09880;
-  font-family: 'Courier New', monospace;
-  margin-top: auto;
-  padding-bottom: 8px;
-}
-
-@media (max-width:440px) {
-  .printer-box { width: 80vw; height: 80vw; }
+.e-bold {
+  font-size: 9px;
+  color: #111;
+  font-weight: bold;
+  line-height: 1.6;
 }
 
 /* ── Form ── */
-.form-section { width:100%; max-width:var(--printer-w); }
+.form-section { width:100%; max-width:300px; }
 
 label { font-size:10px; letter-spacing:2px; opacity:.4; display:block; margin-bottom:6px; }
 textarea {
@@ -231,8 +209,11 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 .toast.show { opacity:1; }
 
 @media (max-width:440px) {
-  body { padding:28px 14px 50px; }
-  :root { --printer-w:100%; --zone-h:260px; }
+  body { padding:40px 14px 60px; }
+  .printer-wrap { width:85vw; }
+  .printer-body { width:85vw; height:85vw; }
+  .printer-legs { padding:0 28px; }
+  .form-section { max-width:85vw; }
 }
 </style>
 </head>
@@ -251,26 +232,22 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   </div>
 </div>
 
-<div class="printer-box">
-  <div class="printer-box-slot"></div>
-  <span class="printer-box-brand">PWOU — 01</span>
-</div>
-
 <div class="header">
   <h1>PARALLEL WORLD OBSERVATION UNIT</h1>
   <h2>SIGNAL SUBMISSION TERMINAL</h2>
 </div>
 
-<div class="printer-scene">
-  <div class="printer-lower"></div>
-  <div class="receipt-zone" id="receipt-zone">
-    <div class="receipt-tape" id="receipt"></div>
-  </div>
-  <div class="printer-upper">
-    <div class="printer-face">
-      <span class="printer-brand">PWOU — 01</span>
-    </div>
+<div class="printer-wrap">
+  <div class="printer-body">
     <div class="printer-slot"></div>
+    <div class="receipt-zone">
+      <div class="receipt-tape" id="receipt"></div>
+    </div>
+    <span class="printer-brand">PWOU — 01</span>
+  </div>
+  <div class="printer-legs">
+    <div class="printer-leg"></div>
+    <div class="printer-leg"></div>
   </div>
 </div>
 
@@ -288,25 +265,41 @@ const SERVER = '';
 let userLat = null, userLon = null, userCountry = null;
 const knownIds = new Set();
 
+function pad(n, len) { return String(n).padStart(len, '0'); }
+
 function makeEntry(r) {
   const div = document.createElement('div');
   div.className = 'receipt-entry';
+
+  const date = (r.timestamp || '').split(' ')[0] || '—';
+  const time = (r.timestamp || '').split(' ')[1] || '—';
   const coord = r.latitude != null
-    ? r.latitude.toFixed(3) + ' / ' + r.longitude.toFixed(3)
+    ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') +
+      ' / ' + Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W')
     : '—';
+  const region = (r.country || 'UNKNOWN').toUpperCase();
+  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(r.id, 4);
+
   div.innerHTML =
-    '<div class="e-num">#' + String(r.id).padStart(4, '0') + '</div>' +
-    '<div class="e-meta">' +
-      (r.timestamp || '—') + '&nbsp;&nbsp;·&nbsp;&nbsp;' +
-      (r.country || 'UNKNOWN').toUpperCase() + '&nbsp;&nbsp;·&nbsp;&nbsp;' +
-      coord +
-    '</div>' +
-    '<div class="e-desc">' + r.description + '</div>';
+    '<div class="e-divider">================================</div>' +
+    '<div class="e-line">DATE : ' + date + '</div>' +
+    '<div class="e-line">TIME : ' + time + '</div>' +
+    '<div class="e-line">COORD : ' + coord + '</div>' +
+    '<div class="e-line">REGION : ' + region + '</div>' +
+    '<div class="e-line">&nbsp;</div>' +
+    '<div class="e-line">EVENT NO.</div>' +
+    '<div class="e-bold">' + eventNo + '</div>' +
+    '<div class="e-title">---- LOG DETAILS ----</div>' +
+    '<div class="e-line">' + r.description + '</div>' +
+    '<div class="e-divider">-----------------</div>' +
+    '<div class="e-line">STATUS : RECORDED</div>' +
+    '<div class="e-line">CHANNEL : STABILIZING</div>' +
+    '<div class="e-divider">================================</div>';
   return div;
 }
 
 function feedScroll() {
-  const zone = document.getElementById('receipt-zone');
+  const zone = document.querySelector('.receipt-zone');
   const tape = document.getElementById('receipt');
   const excess = tape.scrollHeight - zone.clientHeight;
   tape.style.marginTop = excess > 0 ? (-excess) + 'px' : '0';
