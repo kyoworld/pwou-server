@@ -31,6 +31,7 @@ td { padding:8px 10px; border-bottom:1px solid #111; vertical-align:top; }
 .action-btn { background:none; border:1px solid #444; color:#fff; font-family:'Courier New',monospace; font-size:10px; padding:2px 8px; cursor:pointer; margin-right:4px; margin-bottom:4px; }
 .hide-btn { color:#666; }
 .hide-btn.active { color:#f55; border-color:#f55; }
+tr.selected-row td { background:#1a1a1a; }
 </style>
 </head>
 <body>
@@ -127,7 +128,7 @@ function render() {
   document.getElementById('hidden-count').textContent = hidden.length;
   let data = currentTab === 'pending' ? pending : currentTab === 'printed' ? printed : currentTab === 'hidden' ? hidden : allData;
   document.getElementById('admin-feed').innerHTML = data.map(r => `
-    <tr class="${r.hidden ? 'hidden-row' : r.printed ? 'done' : ''}">
+    <tr class="${r.hidden ? 'hidden-row' : r.printed ? 'done' : ''}" onclick="selectRow(this)" style="cursor:pointer">
       <td>${String(r.id).padStart(4,'0')}</td>
       <td>${r.timestamp || '-'}</td>
       <td>${(r.country || 'UNKNOWN').toUpperCase()}</td>
@@ -135,11 +136,17 @@ function render() {
       <td>${r.description}</td>
       <td>${r.hidden ? '<span style="color:#f55">HIDDEN</span>' : r.printed ? 'PRINTED' : '<span class="pending">PENDING</span>'}</td>
       <td>
-        ${!r.printed && !r.hidden ? '<button class="action-btn" onclick="markPrinted('+r.id+')">DONE</button>' : ''}
-        <button class="action-btn hide-btn ${r.hidden ? 'active' : ''}" onclick="toggleHidden('+r.id+')">${r.hidden ? 'UNHIDE' : 'HIDE'}</button>
+        ${!r.printed && !r.hidden ? `<button class="action-btn" onclick="event.stopPropagation();markPrinted(${r.id})">DONE</button>` : ''}
+        <button class="action-btn hide-btn ${r.hidden ? 'active' : ''}" onclick="event.stopPropagation();toggleHidden(${r.id})">${r.hidden ? 'UNHIDE' : 'HIDE'}</button>
       </td>
     </tr>
   `).join('');
+}
+
+function selectRow(tr) {
+  const already = tr.classList.contains('selected-row');
+  document.querySelectorAll('#admin-feed tr').forEach(r => r.classList.remove('selected-row'));
+  if (!already) tr.classList.add('selected-row');
 }
 
 document.getElementById('pw').addEventListener('keydown', e => { if(e.key==='Enter') login(); });
