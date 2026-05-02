@@ -1,20 +1,24 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-import sqlite3
 import os
 from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
 
-DB_PATH = "submissions.db"
+DATABASE_URL = os.environ.get('DATABASE_URL')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'pwou2026')
 
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_conn()
     c = conn.cursor()
     c.execute("""CREATE TABLE IF NOT EXISTS submissions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         description TEXT NOT NULL,
         latitude REAL,
         longitude REAL,
@@ -40,10 +44,10 @@ def admin():
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_conn()
     c = conn.cursor()
     c.execute("""INSERT INTO submissions (description, latitude, longitude, country, timestamp)
-                 VALUES (?, ?, ?, ?, ?)""",
+                 VALUES (%s, %s, %s, %s, %s)""",
               (data.get('description'), data.get('latitude'), data.get('longitude'),
                data.get('country'), datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     conn.commit()
@@ -52,20 +56,20 @@ def submit():
 
 @app.route('/pending', methods=['GET'])
 def pending():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
+    conn = get_conn()
+    c = conn.cursor(cursor_factory=RealDictCursor)
     c.execute('SELECT * FROM submissions WHERE printed = 0 ORDER BY id ASC LIMIT 1')
     row = c.fetchone()
     conn.close()
     if row:
-        return jsonify({"id": row[0], "description": row[1], "latitude": row[2], "longitude": row[3], "country": row[4], "timestamp": row[5]})
+        return jsonify(dict(row))
     return jsonify(None)
 
 @app.route('/mark_printed/<int:submission_id>', methods=['POST'])
 def mark_printed(submission_id):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_conn()
     c = conn.cursor()
-    c.execute('UPDATE submissions SET printed = 1 WHERE id = ?', (submission_id,))
+    c.execute('UPDATE submissions SET printed = 1 WHERE id = %s', (submission_id,))
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})
@@ -73,12 +77,12 @@ def mark_printed(submission_id):
 @app.route('/api/submissions', methods=['GET'])
 def get_submissions():
     pw = request.args.get('pw', '')
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
+    conn = get_conn()
+    c = conn.cursor(cursor_factory=RealDictCursor)
     c.execute('SELECT * FROM submissions ORDER BY id DESC')
     rows = c.fetchall()
     conn.close()
-    result = [{"id": r[0], "description": r[1], "latitude": r[2], "longitude": r[3], "country": r[4], "timestamp": r[5], "printed": r[6]} for r in rows]
+    result = [dict(r) for r in rows]
     if pw == ADMIN_PASSWORD:
         return jsonify({"auth": True, "data": result})
     return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"]} for r in result]})
