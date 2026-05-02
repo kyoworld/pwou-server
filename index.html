@@ -81,8 +81,9 @@ function requestLocation() {
 }
 
 function getCountryFromCoords(lat, lon) {
-  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json')
-    .then(r => r.json()).then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN').catch(() => 'UNKNOWN');
+  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json', {
+    headers: { 'Accept-Language': 'en' }
+  }).then(r => r.json()).then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN').catch(() => 'UNKNOWN');
 }
 
 function initLocation() {
