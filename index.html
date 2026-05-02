@@ -123,23 +123,30 @@ body {
 /* 영수증 항목 */
 .receipt-entry {
   padding: 10px 12px;
-  border-bottom: 1px dashed #ccc;
+  border-bottom: none;
   flex-shrink: 0;
   animation: feedIn 0.4s ease-out;
+  position: relative;
 }
-.receipt-entry:last-child { border-bottom: none; }
-
-@keyframes feedIn {
-  from { opacity:0; transform:translateY(-8px); }
-  to   { opacity:1; transform:translateY(0); }
+.receipt-entry:last-child::after { display: none; }
+.receipt-entry::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30%;
+  height: 1px;
+  background: #ccc;
 }
-
 .e-divider {
   font-size: 9px;
   color: #bbb;
   letter-spacing: 0;
   margin: 2px 0;
   line-height: 1.2;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .e-title {
   font-size: 8px;
