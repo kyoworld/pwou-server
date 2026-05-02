@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import os
 from datetime import datetime
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
 CORS(app)
 
 DB_PATH = "submissions.db"
@@ -24,6 +24,10 @@ def init_db():
     conn.commit()
     conn.close()
 
+@app.route('/')
+def index():
+    return send_from_directory('.', 'index.html')
+
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
@@ -31,11 +35,8 @@ def submit():
     c = conn.cursor()
     c.execute("""INSERT INTO submissions (description, latitude, longitude, country, timestamp)
                  VALUES (?, ?, ?, ?, ?)""",
-              (data.get('description'),
-               data.get('latitude'),
-               data.get('longitude'),
-               data.get('country'),
-               datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+              (data.get('description'), data.get('latitude'), data.get('longitude'),
+               data.get('country'), datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})
