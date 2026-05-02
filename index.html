@@ -6,29 +6,151 @@
 <title>PARALLEL WORLD OBSERVATION UNIT</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:#000; color:#fff; font-family:'Courier New',monospace; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-h1 { font-size:13px; letter-spacing:3px; margin-bottom:8px; opacity:0.6; text-align:center; }
-h2 { font-size:10px; letter-spacing:2px; margin-bottom:40px; opacity:0.4; text-align:center; }
-.form { width:100%; max-width:420px; }
-label { font-size:11px; letter-spacing:2px; opacity:0.5; display:block; margin-bottom:6px; }
-textarea { width:100%; background:#111; border:1px solid #333; color:#fff; font-family:'Courier New',monospace; font-size:13px; padding:12px; resize:none; margin-bottom:24px; outline:none; }
-textarea:focus { border-color:#fff; }
-.status { font-size:11px; opacity:0.4; margin-bottom:24px; min-height:16px; line-height:1.6; }
-button { background:#fff; color:#000; border:none; font-family:'Courier New',monospace; font-size:12px; letter-spacing:3px; padding:12px 32px; cursor:pointer; width:100%; margin-bottom:12px; }
-button:disabled { opacity:0.3; cursor:not-allowed; }
-.btn-secondary { background:none; color:#fff; border:1px solid #333; opacity:0.5; }
-.btn-secondary:hover { opacity:1; border-color:#fff; }
-.success { color:#fff; opacity:1 !important; }
-.error { color:#f55; opacity:1 !important; }
-#location-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; z-index:100; padding:30px; }
-.overlay-inner { max-width:380px; width:100%; text-align:center; }
-.overlay-inner h3 { font-size:12px; letter-spacing:3px; margin-bottom:30px; opacity:0.6; }
-.overlay-inner p { font-size:11px; line-height:1.8; opacity:0.5; margin-bottom:12px; }
-.overlay-inner .highlight { opacity:0.8; margin-bottom:30px; }
-.overlay-inner button { margin-bottom:10px; }
-.divider { border:none; border-top:1px solid #1a1a1a; margin:24px 0; }
-.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#fff; color:#000; font-family:'Courier New',monospace; font-size:11px; letter-spacing:2px; padding:12px 24px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:200; }
+body {
+  background:#000; color:#fff;
+  font-family:'Courier New',monospace;
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  padding:48px 20px 60px;
+}
+
+.header { text-align:center; margin-bottom:36px; }
+.header h1 { font-size:10px; letter-spacing:4px; opacity:.4; margin-bottom:6px; }
+.header h2 { font-size:9px; letter-spacing:3px; opacity:.25; }
+
+/* ── Printer scene ── */
+.printer-scene {
+  width:100%; max-width:380px;
+  margin-bottom:28px;
+}
+
+.receipt-wrapper {
+  width:100%;
+  height:260px;
+  overflow-y:scroll;
+  scrollbar-width:none;
+  background:#fff;
+  border-radius:2px 2px 0 0;
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 16%);
+  mask-image:linear-gradient(to bottom, transparent 0%, #000 16%);
+}
+.receipt-wrapper::-webkit-scrollbar { display:none; }
+
+.receipt-paper {
+  display:flex; flex-direction:column;
+  min-height:100%;
+  justify-content:flex-end;
+  padding:8px 16px 4px;
+}
+
+.receipt-entry {
+  padding:9px 0;
+  border-bottom:1px dashed #d0d0d0;
+  animation:printIn .3s ease-out;
+}
+.receipt-entry:last-child { border-bottom:none; padding-bottom:2px; }
+
+@keyframes printIn {
+  from { opacity:0; transform:translateY(5px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.e-num  { font-size:8px; color:#bbb; letter-spacing:1px; margin-bottom:2px; }
+.e-meta { font-size:9px; color:#777; margin-bottom:3px; line-height:1.4; }
+.e-desc { font-size:11px; color:#111; line-height:1.55; }
+
+/* ── Printer body ── */
+.printer-body {
+  width:100%;
+  background:#fff;
+  border-radius:0 0 6px 6px;
+  box-shadow:0 12px 48px rgba(255,255,255,.07);
+  padding:0 18px 16px;
+}
+.printer-slot {
+  height:6px;
+  background:#191919;
+  box-shadow:inset 0 2px 5px #000, 0 1px 0 #e4e4e4;
+  margin-bottom:13px;
+}
+.printer-face {
+  display:flex; align-items:center; justify-content:space-between;
+}
+.printer-brand { font-size:8px; letter-spacing:3px; color:#bbb; }
+.leds { display:flex; gap:7px; align-items:center; }
+.led {
+  width:6px; height:6px; border-radius:50%;
+}
+.led.amber { background:#b87333; box-shadow:0 0 3px #b87333; }
+.led.green {
+  background:#33aa33;
+  box-shadow:0 0 4px #33aa33;
+  animation:ledBlink 2s infinite;
+}
+@keyframes ledBlink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── Form ── */
+.form-section { width:100%; max-width:380px; }
+
+label { font-size:10px; letter-spacing:2px; opacity:.4; display:block; margin-bottom:6px; }
+textarea {
+  width:100%;
+  background:#0b0b0b; border:1px solid #1e1e1e;
+  color:#fff; font-family:'Courier New',monospace;
+  font-size:12px; padding:11px;
+  resize:none; margin-bottom:14px; outline:none;
+  line-height:1.6;
+}
+textarea:focus { border-color:#333; }
+
+.status { font-size:10px; opacity:.4; margin-bottom:14px; min-height:15px; line-height:1.6; }
+.status.success { color:#fff; opacity:1; }
+.status.error   { color:#f55; opacity:1; }
+
+.btn-primary {
+  width:100%; background:#fff; color:#000; border:none;
+  font-family:'Courier New',monospace; font-size:11px;
+  letter-spacing:3px; padding:12px;
+  cursor:pointer; margin-bottom:8px;
+}
+.btn-primary:disabled { opacity:.2; cursor:not-allowed; }
+.btn-secondary {
+  width:100%; background:none; color:#fff;
+  border:1px solid #1c1c1c;
+  font-family:'Courier New',monospace; font-size:10px;
+  letter-spacing:2px; padding:10px;
+  cursor:pointer; opacity:.4;
+}
+.btn-secondary:hover { opacity:.8; border-color:#333; }
+
+/* ── Overlay ── */
+#location-overlay {
+  position:fixed; inset:0; background:#000;
+  display:flex; align-items:center; justify-content:center;
+  z-index:100; padding:30px;
+}
+.overlay-inner { max-width:340px; width:100%; text-align:center; }
+.overlay-inner h3 { font-size:11px; letter-spacing:3px; opacity:.6; margin-bottom:26px; }
+.overlay-inner p  { font-size:10px; line-height:1.8; opacity:.45; margin-bottom:8px; }
+.overlay-inner .hl { opacity:.75; margin-bottom:26px; }
+.overlay-inner .btn-primary  { margin-bottom:8px; }
+hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
+
+/* ── Toast ── */
+.toast {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+  background:#fff; color:#000;
+  font-family:'Courier New',monospace; font-size:10px; letter-spacing:2px;
+  padding:10px 22px;
+  opacity:0; transition:opacity .3s; pointer-events:none; z-index:200;
+}
 .toast.show { opacity:1; }
+
+@media (max-width:440px) {
+  body { padding:32px 14px 50px; }
+  .header { margin-bottom:26px; }
+  .receipt-wrapper { height:220px; }
+}
 </style>
 </head>
 <body>
@@ -37,24 +159,41 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
   <div class="overlay-inner">
     <h3>SIGNAL ACQUISITION</h3>
     <p>본 장치는 차원 이탈 현상을 정확히 기록하기 위해<br>제보자의 <strong style="opacity:1">위치 좌표</strong>가 필요합니다.</p>
-    <hr class="divider">
-    <p class="highlight">
-      수집 항목: GPS 좌표, 국가 정보<br>
-      수집하지 않는 항목: IP, 이름, 기기정보<br>
-      모든 제보는 완전 익명으로 처리됩니다.
-    </p>
-    <button onclick="requestLocation()">위치 정보 허용 — 제보 시작</button>
+    <hr class="div">
+    <p class="hl">수집 항목: GPS 좌표, 국가 정보<br>
+    수집하지 않는 항목: IP, 이름, 기기정보<br>
+    모든 제보는 완전 익명으로 처리됩니다.</p>
+    <button class="btn-primary" onclick="requestLocation()">위치 정보 허용 — 제보 시작</button>
     <button class="btn-secondary" onclick="goToBoard()">거부 — 현황 확인만</button>
   </div>
 </div>
 
-<h1>PARALLEL WORLD OBSERVATION UNIT</h1>
-<h2>SIGNAL SUBMISSION TERMINAL</h2>
-<div class="form">
+<div class="header">
+  <h1>PARALLEL WORLD OBSERVATION UNIT</h1>
+  <h2>SIGNAL SUBMISSION TERMINAL</h2>
+</div>
+
+<div class="printer-scene">
+  <div class="receipt-wrapper" id="receipt-wrapper">
+    <div class="receipt-paper" id="receipt"></div>
+  </div>
+  <div class="printer-body">
+    <div class="printer-slot"></div>
+    <div class="printer-face">
+      <span class="printer-brand">PWOU — 01</span>
+      <div class="leds">
+        <div class="led amber"></div>
+        <div class="led green" id="act-led"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="form-section">
   <label>ANOMALY DESCRIPTION</label>
-  <textarea id="desc" rows="5" placeholder="목격한 이상 현상을 기술하세요&#10;Describe the anomaly you witnessed..."></textarea>
+  <textarea id="desc" rows="4" placeholder="목격한 이상 현상을 기술하세요&#10;Describe the anomaly you witnessed..."></textarea>
   <div class="status" id="status">ACQUIRING COORDINATES...</div>
-  <button id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
+  <button class="btn-primary" id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
   <button class="btn-secondary" onclick="location.href='/board'">LIVE FEED →</button>
 </div>
 <div class="toast" id="toast">SIGNAL RECORDED</div>
@@ -62,9 +201,68 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
 <script>
 const SERVER = '';
 let userLat = null, userLon = null, userCountry = null;
+const knownIds = new Set();
 
-function goToBoard() {
-  window.location.replace('/board');
+// ── Receipt feed ───────────────────────────────────────────────
+function makeEntry(r) {
+  const div = document.createElement('div');
+  div.className = 'receipt-entry';
+  const coord = r.latitude != null ? r.latitude.toFixed(3) + ' / ' + r.longitude.toFixed(3) : '—';
+  div.innerHTML =
+    '<div class="e-num">#' + String(r.id).padStart(4, '0') + '</div>' +
+    '<div class="e-meta">' + (r.timestamp || '—') + '  ·  ' +
+      (r.country || 'UNKNOWN').toUpperCase() + '  ·  ' + coord + '</div>' +
+    '<div class="e-desc">' + r.description + '</div>';
+  return div;
+}
+
+async function poll() {
+  try {
+    const json = await fetch('/api/submissions').then(r => r.json());
+    const entries = [...(json.data || [])].reverse(); // oldest first
+    const paper   = document.getElementById('receipt');
+    const wrapper = document.getElementById('receipt-wrapper');
+    let added = false;
+    for (const r of entries) {
+      if (!knownIds.has(r.id)) {
+        knownIds.add(r.id);
+        paper.appendChild(makeEntry(r));
+        added = true;
+      }
+    }
+    if (added) {
+      wrapper.scrollTop = wrapper.scrollHeight;
+      flashLed();
+    }
+  } catch (e) {}
+}
+
+function flashLed() {
+  const led = document.getElementById('act-led');
+  led.style.background = '#00ff44';
+  led.style.boxShadow = '0 0 8px #00ff44';
+  setTimeout(() => { led.style.background = ''; led.style.boxShadow = ''; }, 220);
+}
+
+poll();
+setInterval(poll, 1000);
+
+// ── Location ───────────────────────────────────────────────────
+function goToBoard() { window.location.replace('/board'); }
+
+function getCountryFromCoords(lat, lon) {
+  return fetch(
+    'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json',
+    { headers: { 'Accept-Language': 'en' } }
+  ).then(r => r.json())
+   .then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN')
+   .catch(() => 'UNKNOWN');
+}
+
+function setCoordStatus() {
+  document.getElementById('status').className = 'status';
+  document.getElementById('status').textContent =
+    'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
 }
 
 function requestLocation() {
@@ -72,18 +270,10 @@ function requestLocation() {
     userLat = pos.coords.latitude;
     userLon = pos.coords.longitude;
     userCountry = await getCountryFromCoords(userLat, userLon);
-    document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+    setCoordStatus();
     document.getElementById('btn').disabled = false;
     document.getElementById('location-overlay').style.display = 'none';
-  }, function() {
-    goToBoard();
-  });
-}
-
-function getCountryFromCoords(lat, lon) {
-  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json', {
-    headers: { 'Accept-Language': 'en' }
-  }).then(r => r.json()).then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN').catch(() => 'UNKNOWN');
+  }, goToBoard);
 }
 
 function initLocation() {
@@ -94,7 +284,7 @@ function initLocation() {
         userLat = pos.coords.latitude;
         userLon = pos.coords.longitude;
         userCountry = await getCountryFromCoords(userLat, userLon);
-        document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+        setCoordStatus();
         document.getElementById('btn').disabled = false;
       });
     } else if (result.state === 'denied') {
@@ -107,17 +297,13 @@ function initLocation() {
   });
 }
 
-window.addEventListener('pageshow', function() {
-  initLocation();
-});
+window.addEventListener('pageshow', initLocation);
 
+// ── Submit ─────────────────────────────────────────────────────
 async function submitReport() {
-  var desc = document.getElementById('desc').value.trim();
+  const desc = document.getElementById('desc').value.trim();
   if (!desc) return;
-  if (desc === 'pwou2026') {
-    window.location.href = '/admin';
-    return;
-  }
+  if (desc === 'pwou2026') { window.location.href = '/admin'; return; }
   document.getElementById('btn').disabled = true;
   document.getElementById('status').textContent = 'TRANSMITTING...';
   try {
@@ -129,15 +315,14 @@ async function submitReport() {
     document.getElementById('status').className = 'status success';
     document.getElementById('status').textContent = 'SIGNAL RECORDED. RECEIPT PENDING.';
     document.getElementById('desc').value = '';
-    var toast = document.getElementById('toast');
+    const toast = document.getElementById('toast');
     toast.classList.add('show');
-    setTimeout(function() { toast.classList.remove('show'); }, 2500);
-    setTimeout(function() {
+    setTimeout(() => toast.classList.remove('show'), 2500);
+    setTimeout(() => {
       document.getElementById('btn').disabled = false;
-      document.getElementById('status').className = 'status';
-      document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+      setCoordStatus();
     }, 3000);
-  } catch(e) {
+  } catch (e) {
     document.getElementById('status').className = 'status error';
     document.getElementById('status').textContent = 'TRANSMISSION FAILED. RETRY.';
     document.getElementById('btn').disabled = false;
