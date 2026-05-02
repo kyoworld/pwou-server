@@ -27,6 +27,8 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
 .overlay-inner .highlight { opacity:0.8; margin-bottom:30px; }
 .overlay-inner button { margin-bottom:10px; }
 .divider { border:none; border-top:1px solid #1a1a1a; margin:24px 0; }
+.toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#fff; color:#000; font-family:'Courier New',monospace; font-size:11px; letter-spacing:2px; padding:12px 24px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:200; }
+.toast.show { opacity:1; }
 </style>
 </head>
 <body>
@@ -55,6 +57,7 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
   <button id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
   <button class="btn-secondary" onclick="location.href='/board'">LIVE FEED →</button>
 </div>
+<div class="toast" id="toast">SIGNAL RECORDED</div>
 
 <script>
 const SERVER = '';
@@ -83,10 +86,7 @@ function getCountryFromCoords(lat, lon) {
 }
 
 function initLocation() {
-  if (!navigator.geolocation) {
-    goToBoard();
-    return;
-  }
+  if (!navigator.geolocation) { goToBoard(); return; }
   navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
     if (result.state === 'granted') {
       navigator.geolocation.getCurrentPosition(async function(pos) {
@@ -113,12 +113,10 @@ window.addEventListener('pageshow', function() {
 async function submitReport() {
   var desc = document.getElementById('desc').value.trim();
   if (!desc) return;
-
-  if (desc === 'kyo9089') {
+  if (desc === 'pwou2026') {
     window.location.href = '/admin';
     return;
   }
-
   document.getElementById('btn').disabled = true;
   document.getElementById('status').textContent = 'TRANSMITTING...';
   try {
@@ -130,6 +128,9 @@ async function submitReport() {
     document.getElementById('status').className = 'status success';
     document.getElementById('status').textContent = 'SIGNAL RECORDED. RECEIPT PENDING.';
     document.getElementById('desc').value = '';
+    var toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(function() { toast.classList.remove('show'); }, 2500);
     setTimeout(function() {
       document.getElementById('btn').disabled = false;
       document.getElementById('status').className = 'status';

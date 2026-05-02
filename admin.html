@@ -21,12 +21,16 @@ table { width:100%; border-collapse:collapse; font-size:11px; }
 th { text-align:left; padding:8px 10px; opacity:0.4; letter-spacing:2px; font-size:10px; border-bottom:1px solid #222; }
 td { padding:8px 10px; border-bottom:1px solid #111; vertical-align:top; }
 .done { opacity:0.3; }
+.hidden-row { opacity:0.2; }
 .pending { color:#fff; }
 #login-screen { display:block; }
 #admin-screen { display:none; }
-.stats { display:flex; gap:40px; margin-bottom:30px; }
+.stats { display:flex; gap:40px; margin-bottom:30px; flex-wrap:wrap; }
 .stat-item { font-size:11px; opacity:0.5; }
 .stat-item span { display:block; font-size:24px; opacity:1; color:#fff; margin-bottom:4px; }
+.action-btn { background:none; border:1px solid #444; color:#fff; font-family:'Courier New',monospace; font-size:10px; padding:2px 8px; cursor:pointer; margin-right:4px; margin-bottom:4px; }
+.hide-btn { color:#666; }
+.hide-btn.active { color:#f55; border-color:#f55; }
 </style>
 </head>
 <body>
@@ -50,16 +54,18 @@ td { padding:8px 10px; border-bottom:1px solid #111; vertical-align:top; }
     <div class="stat-item"><span id="total">0</span>TOTAL</div>
     <div class="stat-item"><span id="pending-count">0</span>PENDING</div>
     <div class="stat-item"><span id="printed-count">0</span>PRINTED</div>
+    <div class="stat-item"><span id="hidden-count">0</span>HIDDEN</div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="showTab('all')">ALL</div>
     <div class="tab" onclick="showTab('pending')">PENDING</div>
     <div class="tab" onclick="showTab('printed')">PRINTED</div>
+    <div class="tab" onclick="showTab('hidden')">HIDDEN</div>
   </div>
   <table>
     <thead>
       <tr>
-        <th>NO</th><th>TIME</th><th>REGION</th><th>COORD</th><th>ANOMALY</th><th>STATUS</th><th></th>
+        <th>NO</th><th>TIME</th><th>REGION</th><th>COORD</th><th>ANOMALY</th><th>STATUS</th><th>ACTION</th>
       </tr>
     </thead>
     <tbody id="admin-feed"></tbody>
@@ -98,30 +104,40 @@ async function markPrinted(id) {
   await reload();
 }
 
+async function toggleHidden(id) {
+  await fetch('/toggle_hidden/' + id, { method: 'POST' });
+  await reload();
+}
+
 function showTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['all','pending','printed'][i] === tab);
+    t.classList.toggle('active', ['all','pending','printed','hidden'][i] === tab);
   });
   render();
 }
 
 function render() {
-  const pending = allData.filter(r => !r.printed);
+  const pending = allData.filter(r => !r.printed && !r.hidden);
   const printed = allData.filter(r => r.printed);
+  const hidden = allData.filter(r => r.hidden);
   document.getElementById('total').textContent = allData.length;
   document.getElementById('pending-count').textContent = pending.length;
   document.getElementById('printed-count').textContent = printed.length;
-  let data = currentTab === 'pending' ? pending : currentTab === 'printed' ? printed : allData;
+  document.getElementById('hidden-count').textContent = hidden.length;
+  let data = currentTab === 'pending' ? pending : currentTab === 'printed' ? printed : currentTab === 'hidden' ? hidden : allData;
   document.getElementById('admin-feed').innerHTML = data.map(r => `
-    <tr class="${r.printed ? 'done' : ''}">
+    <tr class="${r.hidden ? 'hidden-row' : r.printed ? 'done' : ''}">
       <td>${String(r.id).padStart(4,'0')}</td>
       <td>${r.timestamp || '-'}</td>
       <td>${(r.country || 'UNKNOWN').toUpperCase()}</td>
       <td style="font-size:10px;opacity:0.5">${r.latitude ? r.latitude.toFixed(4)+' / '+r.longitude.toFixed(4) : '-'}</td>
       <td>${r.description}</td>
-      <td><span class="${r.printed ? '' : 'pending'}">${r.printed ? 'PRINTED' : 'PENDING'}</span></td>
-      <td>${!r.printed ? '<button onclick="markPrinted('+r.id+')" style="background:none;border:1px solid #444;color:#fff;font-family:Courier New,monospace;font-size:10px;padding:2px 8px;cursor:pointer;">DONE</button>' : ''}</td>
+      <td>${r.hidden ? '<span style="color:#f55">HIDDEN</span>' : r.printed ? 'PRINTED' : '<span class="pending">PENDING</span>'}</td>
+      <td>
+        ${!r.printed && !r.hidden ? '<button class="action-btn" onclick="markPrinted('+r.id+')">DONE</button>' : ''}
+        <button class="action-btn hide-btn ${r.hidden ? 'active' : ''}" onclick="toggleHidden('+r.id+')">${r.hidden ? 'UNHIDE' : 'HIDE'}</button>
+      </td>
     </tr>
   `).join('');
 }

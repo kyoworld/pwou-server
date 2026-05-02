@@ -24,8 +24,13 @@ def init_db():
         longitude REAL,
         country TEXT,
         timestamp TEXT,
-        printed INTEGER DEFAULT 0
+        printed INTEGER DEFAULT 0,
+        hidden INTEGER DEFAULT 0
     )""")
+    try:
+        c.execute("ALTER TABLE submissions ADD COLUMN hidden INTEGER DEFAULT 0")
+    except:
+        pass
     conn.commit()
     conn.close()
 
@@ -58,7 +63,7 @@ def submit():
 def pending():
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
-    c.execute('SELECT * FROM submissions WHERE printed = 0 ORDER BY id ASC LIMIT 1')
+    c.execute('SELECT * FROM submissions WHERE printed = 0 AND hidden = 0 ORDER BY id ASC LIMIT 1')
     row = c.fetchone()
     conn.close()
     if row:
@@ -74,6 +79,15 @@ def mark_printed(submission_id):
     conn.close()
     return jsonify({"status": "ok"})
 
+@app.route('/toggle_hidden/<int:submission_id>', methods=['POST'])
+def toggle_hidden(submission_id):
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute('UPDATE submissions SET hidden = CASE WHEN hidden = 1 THEN 0 ELSE 1 END WHERE id = %s', (submission_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "ok"})
+
 @app.route('/api/submissions', methods=['GET'])
 def get_submissions():
     pw = request.args.get('pw', '')
@@ -85,7 +99,8 @@ def get_submissions():
     result = [dict(r) for r in rows]
     if pw == ADMIN_PASSWORD:
         return jsonify({"auth": True, "data": result})
-    return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"]} for r in result]})
+    public = [r for r in result if not r.get('hidden')]
+    return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"]} for r in public]})
 
 if __name__ == '__main__':
     init_db()
