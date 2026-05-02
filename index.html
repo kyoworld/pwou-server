@@ -20,28 +20,29 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
 .btn-secondary:hover { opacity:1; border-color:#fff; }
 .success { color:#fff; opacity:1 !important; }
 .error { color:#f55; opacity:1 !important; }
-
-/* 위치동의 오버레이 */
 #location-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; z-index:100; padding:30px; }
 .overlay-inner { max-width:380px; width:100%; text-align:center; }
 .overlay-inner h3 { font-size:12px; letter-spacing:3px; margin-bottom:30px; opacity:0.6; }
 .overlay-inner p { font-size:11px; line-height:1.8; opacity:0.5; margin-bottom:12px; }
 .overlay-inner .highlight { opacity:0.8; margin-bottom:30px; }
 .overlay-inner button { margin-bottom:10px; }
-.divider { border:none; border-top:1px solid #1a1a1a; margin:30px 0; }
+.divider { border:none; border-top:1px solid #1a1a1a; margin:24px 0; }
 </style>
 </head>
 <body>
 
-<!-- 위치동의 오버레이 -->
-<div id="location-overlay">
+<div id="location-overlay" style="display:none;">
   <div class="overlay-inner">
     <h3>SIGNAL ACQUISITION</h3>
     <p>본 장치는 차원 이탈 현상을 정확히 기록하기 위해<br>제보자의 <strong style="opacity:1">위치 좌표</strong>가 필요합니다.</p>
     <hr class="divider">
-    <p class="highlight">수집 항목: GPS 좌표, 국가 정보<br>수집하지 않는 항목: IP, 이름, 기기정보<br>모든 제보는 완전 익명으로 처리됩니다.</p>
+    <p class="highlight">
+      수집 항목: GPS 좌표, 국가 정보<br>
+      수집하지 않는 항목: IP, 이름, 기기정보<br>
+      모든 제보는 완전 익명으로 처리됩니다.
+    </p>
     <button onclick="requestLocation()">위치 정보 허용 — 제보 시작</button>
-    <button class="btn-secondary" onclick="denyLocation()">거부 (제보 불가)</button>
+    <button class="btn-secondary" onclick="goToBoard()">거부 — 현황 확인만</button>
   </div>
 </div>
 
@@ -58,6 +59,12 @@ button:disabled { opacity:0.3; cursor:not-allowed; }
 <script>
 const SERVER = '';
 let userLat = null, userLon = null, userCountry = null;
+let locationDenied = false;
+
+function goToBoard() {
+  // 거부하면 board로만 — 뒤로가기로 메인 못오게
+  window.location.replace('/board');
+}
 
 function requestLocation() {
   navigator.geolocation.getCurrentPosition(async function(pos) {
@@ -68,15 +75,71 @@ function requestLocation() {
     document.getElementById('btn').disabled = false;
     document.getElementById('location-overlay').style.display = 'none';
   }, function() {
-    alert('위치 접근이 거부되었습니다. 브라우저 설정에서 위치를 허용해주세요.');
+    // 브라우저 팝업에서 거부한 경우
+    goToBoard();
   });
 }
 
-function denyLocation() {
-  document.getElementById('location-overlay').style.display = 'none';
-  document.getElementById('status').textContent = 'LOCATION DENIED — TRANSMISSION BLOCKED';
-  document.getElementById('btn').disabled = true;
+function getCountryFromCoords(lat, lon) {
+  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json')
+    .then(r => r.json()).then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN').catch(() => 'UNKNOWN');
 }
 
-function getCountryFromCoords(lat, lon) {
-  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&for
+// 페이지 로드 시 위치 권한 상태 확인
+window.onload = function() {
+  if (!navigator.geolocation) {
+    goToBoard();
+    return;
+  }
+  // 이미 권한 허용된 경우 팝업 없이 바로 좌표 취득
+  navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+    if (result.state === 'granted') {
+      // 이미 허용됨 — 팝업 없이 바로 취득
+      navigator.geolocation.getCurrentPosition(async function(pos) {
+        userLat = pos.coords.latitude;
+        userLon = pos.coords.longitude;
+        userCountry = await getCountryFromCoords(userLat, userLon);
+        document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+        document.getElementById('btn').disabled = false;
+      });
+    } else if (result.state === 'denied') {
+      // 이미 거부됨 — 바로 board로
+      goToBoard();
+    } else {
+      // 아직 결정 안 함 — 팝업 표시
+      document.getElementById('location-overlay').style.display = 'flex';
+    }
+  }).catch(function() {
+    // permissions API 미지원 브라우저 — 팝업 표시
+    document.getElementById('location-overlay').style.display = 'flex';
+  });
+};
+
+async function submitReport() {
+  var desc = document.getElementById('desc').value.trim();
+  if (!desc) return;
+  document.getElementById('btn').disabled = true;
+  document.getElementById('status').textContent = 'TRANSMITTING...';
+  try {
+    await fetch(SERVER + '/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: desc, latitude: userLat, longitude: userLon, country: userCountry })
+    });
+    document.getElementById('status').className = 'status success';
+    document.getElementById('status').textContent = 'SIGNAL RECORDED. RECEIPT PENDING.';
+    document.getElementById('desc').value = '';
+    setTimeout(function() {
+      document.getElementById('btn').disabled = false;
+      document.getElementById('status').className = 'status';
+      document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+    }, 3000);
+  } catch(e) {
+    document.getElementById('status').className = 'status error';
+    document.getElementById('status').textContent = 'TRANSMISSION FAILED. RETRY.';
+    document.getElementById('btn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
