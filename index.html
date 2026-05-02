@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PARALLEL WORLD OBSERVATION UNIT</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  h1 { font-size: 14px; letter-spacing: 3px; margin-bottom: 8px; opacity: 0.6; text-align: center; }
+  h2 { font-size: 11px; letter-spacing: 2px; margin-bottom: 40px; opacity: 0.4; text-align: center; }
+  .form { width: 100%; max-width: 420px; }
+  label { font-size: 11px; letter-spacing: 2px; opacity: 0.5; display: block; margin-bottom: 6px; }
+  textarea {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 12px;
+    resize: none;
+    margin-bottom: 24px;
+    outline: none;
+  }
+  textarea:focus { border-color: #fff; }
+  .status {
+    font-size: 11px;
+    opacity: 0.4;
+    margin-bottom: 24px;
+    min-height: 16px;
+  }
+  button {
+    background: #fff;
+    color: #000;
+    border: none;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    padding: 12px 32px;
+    cursor: pointer;
+    width: 100%;
+  }
+  button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .success { color: #fff; opacity: 1 !important; }
+  .error { color: #f55; opacity: 1 !important; }
+</style>
+</head>
+<body>
+<h1>PARALLEL WORLD OBSERVATION UNIT</h1>
+<h2>SIGNAL SUBMISSION TERMINAL</h2>
+<div class="form">
+  <label>ANOMALY DESCRIPTION</label>
+  <textarea id="desc" rows="5" placeholder="Describe the anomaly you witnessed..."></textarea>
+  <div class="status" id="status">ACQUIRING COORDINATES...</div>
+  <button id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
+</div>
+<script>
+const SERVER = 'https://web-production-a4443.up.railway.app';
+let userLat = null, userLon = null, userCountry = null;
+function getCountryFromCoords(lat, lon) {
+  return fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json')
+    .then(r => r.json()).then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN').catch(() => 'UNKNOWN');
+}
+navigator.geolocation.getCurrentPosition(async function(pos) {
+  userLat = pos.coords.latitude;
+  userLon = pos.coords.longitude;
+  userCountry = await getCountryFromCoords(userLat, userLon);
+  document.getElementById('status').textContent = 'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+  document.getElementById('btn').disabled = false;
+}, function() {
+  document.getElementById('status').textContent = 'LOCATION ACCESS DENIED';
+  document.getElementById('btn').disabled = false;
+});
+async function submitReport() {
+  var desc = document.getElementById('desc').value.trim();
+  if (!desc) return;
+  document.getElementById('btn').disabled = true;
+  document.getElementById('status').textContent = 'TRANSMITTING...';
+  try {
+    await fetch(SERVER + '/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: desc, latitude: userLat, longitude: userLon, country: userCountry })
+    });
+    document.getElementById('status').className = 'status success';
+    document.getElementById('status').textContent = 'SIGNAL RECORDED. RECEIPT PENDING.';
+    document.getElementById('desc').value = '';
+  } catch(e) {
+    document.getElementById('status').className = 'status error';
+    document.getElementById('status').textContent = 'TRANSMISSION FAILED. RETRY.';
+    document.getElementById('btn').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
