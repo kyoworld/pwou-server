@@ -8,6 +8,7 @@ app = Flask(__name__, static_folder='.')
 CORS(app)
 
 DB_PATH = "submissions.db"
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'pwou2026')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -27,6 +28,14 @@ def init_db():
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
+
+@app.route('/board')
+def board():
+    return send_from_directory('.', 'board.html')
+
+@app.route('/admin')
+def admin():
+    return send_from_directory('.', 'admin.html')
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -60,6 +69,19 @@ def mark_printed(submission_id):
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})
+
+@app.route('/api/submissions', methods=['GET'])
+def get_submissions():
+    pw = request.args.get('pw', '')
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('SELECT * FROM submissions ORDER BY id DESC')
+    rows = c.fetchall()
+    conn.close()
+    result = [{"id": r[0], "description": r[1], "latitude": r[2], "longitude": r[3], "country": r[4], "timestamp": r[5], "printed": r[6]} for r in rows]
+    if pw == ADMIN_PASSWORD:
+        return jsonify({"auth": True, "data": result})
+    return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"]} for r in result]})
 
 if __name__ == '__main__':
     init_db()
