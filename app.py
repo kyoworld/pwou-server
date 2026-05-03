@@ -52,12 +52,13 @@ def admin():
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.json
+    ts = data.get('timestamp') or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = get_conn()
     c = conn.cursor()
     c.execute("""INSERT INTO submissions (description, latitude, longitude, country, timestamp)
                  VALUES (%s, %s, %s, %s, %s)""",
               (data.get('description'), data.get('latitude'), data.get('longitude'),
-               data.get('country'), datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+               data.get('country'), ts))
     conn.commit()
     conn.close()
     return jsonify({"status": "ok"})

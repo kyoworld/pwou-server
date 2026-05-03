@@ -839,11 +839,6 @@ function makeEntry(r) {
 
 
 
-function todayStr() {
-
-  return new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
-
-}
 
 
 
@@ -907,8 +902,6 @@ async function poll() {
 
     const allData = json.data || [];
 
-    const today = todayStr();
-
     const entries = [...allData].reverse();
 
     const tape = document.getElementById('receipt');
@@ -919,13 +912,7 @@ async function poll() {
 
         knownIds.add(r.id);
 
-        const entryDate = (r.timestamp || '').split(' ')[0];
-
-        if (entryDate === today) {
-
-          tape.prepend(makeEntry(r));
-
-        }
+        tape.prepend(makeEntry(r));
 
       }
 
@@ -1073,7 +1060,7 @@ async function submitReport() {
 
       headers: { 'Content-Type': 'application/json' },
 
-      body: JSON.stringify({ description: desc, latitude: userLat, longitude: userLon, country: userCountry })
+      body: JSON.stringify({ description: desc, latitude: userLat, longitude: userLon, country: userCountry, timestamp: (() => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0'); })() })
 
     });
 

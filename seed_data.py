@@ -1,4 +1,5 @@
-from datetime import datetime
+import random
+from datetime import datetime, timedelta
 
 country_bounds = {
     "KO":  {"name": "KOREA",   "lat": (34.0, 38.0),  "lon": (126.0, 129.0)},
@@ -73,25 +74,29 @@ _SEED_RAW = (
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
-# 황금비율로 deterministic 좌표 생성 (같은 id → 항상 같은 좌표)
-_PHI = 0.6180339887
+SLOT_SECONDS = 60  # 1분마다 새 시드 항목 1개 추가
 
 def get_seed_entries():
-    today = datetime.now().strftime("%Y-%m-%d")
+    now = datetime.now()
+    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elapsed = int((now - day_start).total_seconds())
+    n_slots = min(elapsed // SLOT_SECONDS + 1, len(_SEED_RAW))
+
     entries = []
-    for i, (code, description) in enumerate(_SEED_RAW):
+    for i in range(n_slots):
+        slot_time = day_start + timedelta(seconds=i * SLOT_SECONDS)
+        rng = random.Random(int(slot_time.timestamp()))
+        idx = rng.randint(0, len(_SEED_RAW) - 1)
+        code, description = _SEED_RAW[idx]
         b = country_bounds[code]
-        lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * ((i * _PHI) % 1.0)
-        lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * ((i * _PHI + 0.5) % 1.0)
-        hour   = 8 + (i * 37) % 13   # 08:xx ~ 20:xx
-        minute = (i * 23) % 60
-        second = (i * 41) % 60
+        lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * rng.random()
+        lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * rng.random()
         entries.append({
-            "id":          -(i + 1),
+            "id":          -(i + 1),      # 매일 초기화, 1분마다 ID 증가
             "description": description,
             "country":     b["name"],
             "latitude":    round(lat, 4),
             "longitude":   round(lon, 4),
-            "timestamp":   f"{today} {hour:02d}:{minute:02d}:{second:02d}",
+            "timestamp":   slot_time.strftime("%Y-%m-%d %H:%M:%S"),  # 실제 발생 시각
         })
     return entries
