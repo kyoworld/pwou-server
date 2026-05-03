@@ -220,19 +220,15 @@ body {
 
 
 
-.receipt-clip {
+.receipt-clip-wrap {
 
   width: 62%;
-
-  max-height: 350px;
-
-  overflow: hidden;
 
   position: relative;
 
 }
 
-.receipt-clip::after {
+.receipt-clip-wrap::after {
 
   content: '';
 
@@ -250,7 +246,23 @@ body {
 
   pointer-events: none;
 
+  z-index: 1;
+
 }
+
+.receipt-clip {
+
+  width: 100%;
+
+  max-height: 280px;
+
+  overflow-y: auto;
+
+  scrollbar-width: none;
+
+}
+
+.receipt-clip::-webkit-scrollbar { display: none; }
 
 .receipt-tape {
 
@@ -574,7 +586,7 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 
   .receipt-clip {
 
-    max-height: calc(85vw + 50px);
+    max-height: calc(85vw - 20px);
 
   }
 
@@ -618,7 +630,7 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 
   .receipt-clip {
 
-    max-height: 500px;
+    max-height: 395px;
 
   }
 
@@ -720,9 +732,13 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 
 <div class="receipt-stream">
 
-  <div class="receipt-clip">
+  <div class="receipt-clip-wrap">
 
-    <div class="receipt-tape" id="receipt"></div>
+    <div class="receipt-clip">
+
+      <div class="receipt-tape" id="receipt"></div>
+
+    </div>
 
   </div>
 
