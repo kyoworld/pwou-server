@@ -11,7 +11,7 @@ body {
   font-family:'Courier New',monospace;
   min-height:100vh;
   display:flex; flex-direction:column; align-items:center;
-  padding:60px 20px 80px;
+  padding:88px 20px 80px;
 }
 
 .header { text-align:center; margin-bottom:48px; }
@@ -215,6 +215,56 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 }
 .toast.show { opacity:1; }
 
+/* ── Ticker ── */
+#ticker-bar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 28px;
+  background: #0c0c0c;
+  border-bottom: 1px solid #1c1c1c;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.ticker-label {
+  flex-shrink: 0;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #fff;
+  opacity: 0.35;
+  padding: 0 12px;
+  border-right: 1px solid #1c1c1c;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.ticker-window {
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: tickerScroll linear infinite;
+}
+.ticker-track span {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.5);
+  white-space: nowrap;
+  padding-right: 80px;
+}
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 @media (max-width:440px) {
   body { padding:40px 14px 60px; }
   .printer-wrap { width:85vw; }
@@ -246,6 +296,15 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 </style>
 </head>
 <body>
+
+<div id="ticker-bar">
+  <div class="ticker-label">◉ LIVE</div>
+  <div class="ticker-window">
+    <div id="ticker-track" class="ticker-track">
+      <span id="ticker-a"></span><span id="ticker-b"></span>
+    </div>
+  </div>
+</div>
 
 <div id="location-overlay" style="display:none;">
   <div class="overlay-inner">
@@ -329,17 +388,41 @@ function makeEntry(r) {
 }
 
 function todayStr() {
-  const d = new Date();
-  return d.getFullYear() + '-' +
-    String(d.getMonth() + 1).padStart(2, '0') + '-' +
-    String(d.getDate()).padStart(2, '0');
+  return new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
+}
+
+let tickerCount = 0;
+
+function formatTickerText(items) {
+  if (!items.length) return 'NO SIGNALS DETECTED';
+  return items.map(r => {
+    const coord = r.latitude != null
+      ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') +
+        ' / ' + Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W')
+      : 'UNKNOWN';
+    return 'COORD ' + coord + ' — ' + r.description;
+  }).join('     ◆     ');
+}
+
+function updateTicker(items) {
+  const text = formatTickerText(items) + '     ◆     ';
+  document.getElementById('ticker-a').textContent = text;
+  document.getElementById('ticker-b').textContent = text;
+  const track = document.getElementById('ticker-track');
+  track.style.animation = 'none';
+  void track.offsetWidth;
+  requestAnimationFrame(() => {
+    const w = track.scrollWidth / 2;
+    track.style.animation = 'tickerScroll ' + (w / 60) + 's linear infinite';
+  });
 }
 
 async function poll() {
   try {
     const json = await fetch('/api/submissions').then(r => r.json());
+    const allData = json.data || [];
     const today = todayStr();
-    const entries = [...(json.data || [])].reverse(); // 오래된 순 → 위에서부터 출력
+    const entries = [...allData].reverse();
     const tape = document.getElementById('receipt');
     for (const r of entries) {
       if (!knownIds.has(r.id)) {
@@ -349,6 +432,10 @@ async function poll() {
           tape.appendChild(makeEntry(r));
         }
       }
+    }
+    if (allData.length !== tickerCount) {
+      tickerCount = allData.length;
+      updateTicker(allData.slice(0, 30)); // 최신 30개, newest first
     }
   } catch (e) {}
 }
