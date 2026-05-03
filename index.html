@@ -220,9 +220,41 @@ body {
 
 
 
-.receipt-tape {
+.receipt-clip {
 
   width: 62%;
+
+  max-height: 350px;
+
+  overflow: hidden;
+
+  position: relative;
+
+}
+
+.receipt-clip::after {
+
+  content: '';
+
+  position: absolute;
+
+  bottom: 0;
+
+  left: 0;
+
+  right: 0;
+
+  height: 70px;
+
+  background: linear-gradient(transparent, #000);
+
+  pointer-events: none;
+
+}
+
+.receipt-tape {
+
+  width: 100%;
 
   background: transparent;
 
@@ -540,6 +572,12 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 
   }
 
+  .receipt-clip {
+
+    max-height: calc(85vw + 50px);
+
+  }
+
 }
 
 
@@ -575,6 +613,12 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
     margin-top: -372px; /* -(420px height - 48px slot bottom) */
 
     min-height: 372px;
+
+  }
+
+  .receipt-clip {
+
+    max-height: 500px;
 
   }
 
@@ -676,7 +720,11 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 
 <div class="receipt-stream">
 
-  <div class="receipt-tape" id="receipt"></div>
+  <div class="receipt-clip">
+
+    <div class="receipt-tape" id="receipt"></div>
+
+  </div>
 
 </div>
 
@@ -860,7 +908,7 @@ async function poll() {
 
         if (entryDate === today) {
 
-          tape.appendChild(makeEntry(r));
+          tape.prepend(makeEntry(r));
 
         }
 
