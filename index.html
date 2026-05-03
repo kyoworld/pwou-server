@@ -14,108 +14,78 @@ body {
   padding:88px 20px 80px;
 }
 
+/* ── Ticker ── */
+#ticker-bar { position: fixed; top: 0; left: 0; width: 100%; height: 28px; background: #0c0c0c; border-bottom: 1px solid #1c1c1c; z-index: 500; display: flex; align-items: center; overflow: hidden; }
+.ticker-label { flex-shrink: 0; font-size: 8px; letter-spacing: 2px; color: #fff; opacity: 0.35; padding: 0 12px; border-right: 1px solid #1c1c1c; height: 100%; display: flex; align-items: center; }
+.ticker-window { flex: 1; overflow: hidden; height: 100%; display: flex; align-items: center; }
+.ticker-track { display: flex; width: max-content; animation: tickerScroll linear infinite; }
+.ticker-track span { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); white-space: nowrap; padding-right: 80px; }
+@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
 .header { text-align:center; margin-bottom:48px; }
 .header h1 { font-size:10px; letter-spacing:4px; opacity:.4; margin-bottom:6px; }
 .header h2 { font-size:9px; letter-spacing:3px; opacity:.25; }
 
-/* ── 프린터 본체 ── */
-.printer-wrap {
-  position: relative;
-  width: 300px;
-  z-index: 10; /* 영수증보다 위에 위치 */
-}
-
+/* ── 프린터 ── */
+.printer-wrap { position: relative; width: 300px; z-index: 100; }
 .printer-body {
-  width: 300px;
-  height: 200px; /* 높이 조정 */
-  background: #EDE8DF;
-  border-radius: 10px 10px 4px 4px;
-  position: relative;
-  box-shadow:
-    6px 0 0 #D8D2C8,
-    0 8px 0 #CCC6BC,
-    6px 8px 0 #C2BCB2,
-    8px 16px 32px rgba(0,0,0,0.7),
-    inset 0 1px 0 rgba(255,255,255,0.8);
+  width: 300px; height: 120px; background: #EDE8DF; border-radius: 10px 10px 4px 4px;
+  position: relative; box-shadow: 6px 0 0 #D8D2C8, 0 8px 0 #CCC6BC, 6px 8px 0 #C2BCB2, 8px 16px 32px rgba(0,0,0,0.7);
 }
-
-/* 슬롯 (실제로 영수증이 나오는 구멍) */
 .printer-slot {
-  position: absolute;
-  bottom: 20px; /* 하단으로 배치 */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70%;
-  height: 8px;
-  background: #1A1714;
-  border-radius: 2px;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
-  z-index: 20;
+  position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+  width: 70%; height: 10px; background: #1A1714; border-radius: 2px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.95); z-index: 110;
 }
 
-/* ── 영수증 출력 영역 ── */
+/* ── 영수증 스트림 (스크롤 가능) ── */
 .receipt-container {
-  width: 300px;
-  height: 400px; /* 고정 높이로 스크롤 가능하게 설정 */
-  overflow-y: auto;
-  margin-top: -30px; /* 프린터 슬롯과 겹치도록 */
-  padding: 40px 0 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-  scrollbar-width: none; /* 파이어폭스 */
+  width: 300px; height: 380px; overflow-y: auto; margin-top: -65px;
+  display: flex; flex-direction: column; align-items: center;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, transparent 0px, black 30px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 30px);
 }
-.receipt-container::-webkit-scrollbar { display: none; } /* 크롬/사파리 */
-
-.receipt-tape {
-  width: 65%;
-  display: flex;
-  flex-direction: column; /* 시간순 (위에서 아래로) */
-  gap: 0;
-}
+.receipt-container::-webkit-scrollbar { display: none; }
+.receipt-tape { width: 64%; display: flex; flex-direction: column; }
 
 .receipt-entry {
-  padding: 15px 12px;
-  background: #fff;
-  border-bottom: 1px dashed #ccc;
-  animation: feedIn 0.6s ease-out forwards;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  padding: 15px 12px; background: #fff; flex-shrink: 0;
+  animation: feedIn 0.5s ease-out; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  border-bottom: 1px dashed #eee;
 }
+@keyframes feedIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes feedIn {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.e-divider { font-size: 9px; color: #bbb; margin: 5px 0; overflow: hidden; white-space: nowrap; }
-.e-title { font-size: 8px; letter-spacing: 1px; color: #999; margin: 5px 0; font-weight: bold; }
-.e-line { font-size: 9px; color: #333; line-height: 1.5; word-break: break-all; }
-.e-bold { font-size: 10px; color: #000; font-weight: bold; margin-bottom: 4px; }
+/* ── 영수증 텍스트 스타일 ── */
+.e-divider { font-size: 9px; color: #bbb; letter-spacing: 0; margin: 2px 0; line-height: 1.2; overflow: hidden; white-space: nowrap; }
+.e-title { font-size: 8px; letter-spacing: 1px; color: #333; margin: 4px 0 2px; font-weight: bold; text-align: center; line-height: 1.4; }
+.e-line { font-size: 9px; color: #333; line-height: 1.6; white-space: pre-wrap; }
+.e-bold { font-size: 9px; color: #000; font-weight: bold; line-height: 1.6; }
 
 /* ── Form ── */
 .form-section { width:100%; max-width:300px; margin-top: 20px; }
 textarea {
-  width:100%; background:#0b0b0b; border:1px solid #1e1e1e;
-  color:#fff; font-family:inherit; font-size:12px; padding:12px; resize:none; outline:none;
+  width:100%; background:#0b0b0b; border:1px solid #1e1e1e; color:#fff;
+  font-family:inherit; font-size:12px; padding:11px; resize:none; margin-bottom:12px; outline:none;
 }
 .btn-primary {
-  width:100%; background:#fff; color:#000; border:none; padding:12px; cursor:pointer; font-weight:bold; margin-top:10px;
+  width:100%; background:#fff; color:#000; border:none; padding:12px;
+  font-family:inherit; font-size:11px; letter-spacing:2px; cursor:pointer;
 }
-.btn-primary:disabled { opacity: .2; }
+.btn-primary:disabled { opacity:.2; }
 
-/* Ticker & Overlay (기존 스타일 유지) */
-#ticker-bar { position: fixed; top: 0; width: 100%; height: 28px; background: #0c0c0c; display: flex; align-items: center; z-index: 500; border-bottom: 1px solid #1c1c1c; }
-.ticker-track { display: flex; animation: tickerScroll linear infinite; }
-@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (min-width:441px) {
+  .printer-wrap, .printer-body { width: 400px; }
+  .receipt-container { width: 400px; margin-top: -85px; }
+  .e-line, .e-bold, .e-divider, .e-title { font-size: 11px; }
+}
 </style>
 </head>
 <body>
 
 <div id="ticker-bar">
-  <div style="color:red; font-size:8px; padding:0 10px;">● LIVE</div>
-  <div class="ticker-track" id="ticker-track"><span id="ticker-a"></span><span id="ticker-b"></span></div>
+  <div class="ticker-label">◉ LIVE</div>
+  <div class="ticker-window"><div id="ticker-track" class="ticker-track"><span id="ticker-a"></span><span id="ticker-b"></span></div></div>
 </div>
 
 <div class="header">
@@ -124,43 +94,60 @@ textarea {
 </div>
 
 <div class="printer-wrap">
-  <div class="printer-body">
-    <div class="printer-slot"></div>
-    <!-- 브랜드 표기 제거됨 -->
-  </div>
+  <div class="printer-body"><div class="printer-slot"></div></div>
 </div>
 
-<!-- 영수증이 출력되어 내려오는 박스 (스크롤 가능) -->
 <div class="receipt-container" id="receipt-container">
-  <div class="receipt-tape" id="receipt">
-    <!-- 기록들이 여기 쌓입니다 -->
-  </div>
+  <div class="receipt-tape" id="receipt"></div>
 </div>
 
 <div class="form-section">
-  <textarea id="desc" rows="3" placeholder="이상 현상 기술..."></textarea>
-  <div id="status" style="font-size:10px; opacity:0.5; margin:10px 0;">GPS 연동 대기 중...</div>
+  <textarea id="desc" rows="4" placeholder="Describe the anomaly..."></textarea>
+  <div id="status" style="font-size:10px; opacity:.4; margin-bottom:12px;">ACQUIRING COORDINATES...</div>
   <button class="btn-primary" id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
 </div>
 
 <script>
-let userLat = null, userLon = null, userCountry = null;
+let userLat = null, userLon = null, userCountry = 'UNKNOWN';
 const knownIds = new Set();
 
+function pad(n, len) { return String(n).padStart(len, '0'); }
+
+// 지정된 로그 포맷 생성 함수
 function makeEntry(r) {
   const div = document.createElement('div');
   div.className = 'receipt-entry';
-  const time = r.timestamp || new Date().toLocaleString();
-  const coord = r.latitude ? `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}` : 'UNKNOWN';
   
+  const ts = r.timestamp || "";
+  const date = ts.split(' ')[0] || '2026-00-00';
+  const time = ts.split(' ')[1] || '00:00:00';
+  
+  const lat = r.latitude != null ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') : '0.0000 N';
+  const lon = r.longitude != null ? Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W') : '0.0000 E';
+  const region = (r.country || 'UNKNOWN').toUpperCase();
+  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(r.id || 0, 4);
+  
+  // 랜덤 SHIFT 값 생성 (입력 당시의 정밀 기록 느낌)
+  const shiftVal = (Math.random() * (0.9 - 0.1) + 0.1).toFixed(8);
+
   div.innerHTML = `
-    <div class="e-divider">--------------------------------</div>
-    <div class="e-bold">LOG: ${r.id || 'NEW'}</div>
-    <div class="e-line">TIME: ${time}</div>
-    <div class="e-line">LOC: ${r.country || 'UNKNOWN'} (${coord})</div>
-    <div class="e-title">-- DESCRIPTION --</div>
+    <div class="e-divider">================================</div>
+    <div class="e-title">PARALLEL WORLD OBSERVATION UNIT<br>AUTOMATED LOG RECEIPT</div>
+    <div class="e-divider">&nbsp;</div>
+    <div class="e-line">DATE : ${date}</div>
+    <div class="e-line">TIME : ${time}</div>
+    <div class="e-line">COORD : ${lat} / ${lon}</div>
+    <div class="e-line">REGION : ${region}</div>
+    <div class="e-line">&nbsp;</div>
+    <div class="e-line">EVENT NO.</div>
+    <div class="e-bold">${eventNo}</div>
+    <div class="e-title">---- LOG DETAILS ----</div>
     <div class="e-line">${r.description}</div>
-    <div class="e-divider">--------------------------------</div>
+    <div class="e-divider">-----------------</div>
+    <div class="e-line">STATUS : RECORDED</div>
+    <div class="e-line">CHANNEL : STABILIZING</div>
+    <div class="e-line">SHIFT : CH +${shiftVal}</div>
+    <div class="e-divider">================================</div>
   `;
   return div;
 }
@@ -173,22 +160,23 @@ async function poll() {
     const tape = document.getElementById('receipt');
     const container = document.getElementById('receipt-container');
     
-    // 시간순(과거->최신)으로 보여주기 위해 정렬 후 추가
-    data.sort((a, b) => a.id - b.id).forEach(r => {
+    data.sort((a,b) => a.id - b.id).forEach(r => {
       if (!knownIds.has(r.id)) {
         knownIds.add(r.id);
         tape.appendChild(makeEntry(r));
-        // 새 로그가 나오면 아래로 자동 스크롤
         container.scrollTop = container.scrollHeight;
       }
     });
-  } catch(e) {}
+    
+    const tickerText = data.slice(-10).map(r => `COORD ${r.latitude?.toFixed(2)} — ${r.description}`).join('    ◆    ');
+    document.getElementById('ticker-a').textContent = tickerText + '    ◆    ';
+    document.getElementById('ticker-b').textContent = tickerText + '    ◆    ';
+  } catch (e) {}
 }
 
 async function submitReport() {
   const desc = document.getElementById('desc').value.trim();
   if(!desc) return;
-  
   document.getElementById('btn').disabled = true;
   try {
     await fetch('/submit', {
@@ -198,18 +186,25 @@ async function submitReport() {
     });
     document.getElementById('desc').value = '';
     poll();
-  } catch(e) { alert('전송 실패'); }
+  } catch(e){}
   document.getElementById('btn').disabled = false;
 }
 
-// 위치 정보 로직
-navigator.geolocation.getCurrentPosition(pos => {
+// 위치 기반 데이터 획득
+navigator.geolocation.getCurrentPosition(async (pos) => {
   userLat = pos.coords.latitude;
   userLon = pos.coords.longitude;
-  document.getElementById('status').innerText = `READY: ${userLat.toFixed(2)}, ${userLon.toFixed(2)}`;
+  
+  // 국가 정보 역지오코딩 (OpenStreetMap 무료 API 사용)
+  try {
+    const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`).then(r => r.json());
+    userCountry = geo.address.country || 'UNKNOWN';
+  } catch(e) { userCountry = 'UNKNOWN'; }
+
+  document.getElementById('status').textContent = `COORD: ${userLat.toFixed(4)} / ${userLon.toFixed(4)} — ${userCountry.toUpperCase()}`;
   document.getElementById('btn').disabled = false;
 }, () => {
-  document.getElementById('status').innerText = "위치 정보 거부됨 (제한적 전송)";
+  document.getElementById('status').textContent = "LOCATION ACCESS DENIED";
   document.getElementById('btn').disabled = false;
 });
 
