@@ -22,7 +22,7 @@ body {
 .printer-wrap {
   position: relative;
   width: 300px;
-  margin-bottom: 48px;
+  margin-bottom: 16px;
 }
 
 /* 본체 */
@@ -96,25 +96,32 @@ body {
     0 4px 8px rgba(0,0,0,0.5);
 }
 
-/* 영수증 테이프 */
-.receipt-zone {
+/* 프린터 아래로 나오는 종이 끝 */
+.paper-tip {
   position: absolute;
-  top: 35px; /* 슬롯 바로 아래 */
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 62%;
-  height: calc(300px - 35px);
-  overflow: hidden;
-  z-index: 5;
+  height: 20px;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.25), -2px 0 8px rgba(0,0,0,0.15);
+}
+
+/* 프린터 아래 영수증 스트림 */
+.receipt-stream {
+  width: 300px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 48px;
 }
 
 .receipt-tape {
-  width: 100%;
+  width: 62%;
   background: transparent;
   display: flex;
   flex-direction: column;
   gap: 3px;
-  transition: margin-top 0.6s cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 /* 영수증 항목 */
@@ -153,6 +160,11 @@ body {
   color: #111;
   font-weight: bold;
   line-height: 1.6;
+}
+
+@keyframes feedIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Form ── */
@@ -209,6 +221,7 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   .printer-body { width:85vw; height:85vw; }
   .printer-legs { padding:0 28px; }
   .form-section { max-width:85vw; }
+  .receipt-stream { width:85vw; }
 }
 
 @media (min-width:441px) {
@@ -216,7 +229,6 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   .printer-body { width:420px; height:420px; }
   .printer-slot { top:39px; height:9px; }
   .printer-brand { font-size:9px; bottom:28px; }
-  .receipt-zone { top:49px; height:calc(420px - 49px); }
   .receipt-entry { padding:13px 16px; }
   .e-line    { font-size:12px; }
   .e-nowrap  { white-space:nowrap; overflow:hidden; }
@@ -224,6 +236,7 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   .e-bold    { font-size:12px; }
   .e-title   { font-size:11px; }
   .form-section { max-width:420px; }
+  .receipt-stream { width:420px; }
   label { font-size:12px; }
   textarea { font-size:13px; }
   .btn-primary { font-size:13px; }
@@ -255,15 +268,17 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
 <div class="printer-wrap">
   <div class="printer-body">
     <div class="printer-slot"></div>
-    <div class="receipt-zone">
-      <div class="receipt-tape" id="receipt"></div>
-    </div>
     <span class="printer-brand">PWOU — 01</span>
+    <div class="paper-tip"></div>
   </div>
   <div class="printer-legs">
     <div class="printer-leg"></div>
     <div class="printer-leg"></div>
   </div>
+</div>
+
+<div class="receipt-stream">
+  <div class="receipt-tape" id="receipt"></div>
 </div>
 
 <div class="form-section">
@@ -313,27 +328,28 @@ function makeEntry(r) {
   return div;
 }
 
-function feedScroll() {
-  const zone = document.querySelector('.receipt-zone');
-  const tape = document.getElementById('receipt');
-  const excess = tape.scrollHeight - zone.clientHeight;
-  tape.style.marginTop = excess > 0 ? (-excess) + 'px' : '0';
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
 }
 
 async function poll() {
   try {
     const json = await fetch('/api/submissions').then(r => r.json());
-    const entries = [...(json.data || [])].reverse();
+    const today = todayStr();
+    const entries = [...(json.data || [])].reverse(); // 오래된 순 → 위에서부터 출력
     const tape = document.getElementById('receipt');
-    let added = false;
     for (const r of entries) {
       if (!knownIds.has(r.id)) {
         knownIds.add(r.id);
-        tape.appendChild(makeEntry(r));
-        added = true;
+        const entryDate = (r.timestamp || '').split(' ')[0];
+        if (entryDate === today) {
+          tape.appendChild(makeEntry(r));
+        }
       }
     }
-    if (added) requestAnimationFrame(feedScroll);
   } catch (e) {}
 }
 
