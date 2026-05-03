@@ -6,6 +6,7 @@ import time
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from seed_data import get_seed_entries
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -106,7 +107,14 @@ def get_submissions():
     if pw == ADMIN_PASSWORD:
         return jsonify({"auth": True, "data": result})
     public = [r for r in result if not r.get('hidden')]
-    return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"], "latitude": r["latitude"], "longitude": r["longitude"]} for r in public]})
+    public_fields = [{"id": r["id"], "description": r["description"], "country": r["country"],
+                      "timestamp": r["timestamp"], "latitude": r["latitude"], "longitude": r["longitude"]}
+                     for r in public]
+    if os.environ.get('USE_SEED_DATA', 'false').lower() == 'true':
+        combined = public_fields + get_seed_entries()
+        combined.sort(key=lambda x: x.get('timestamp') or '', reverse=True)
+        return jsonify({"auth": False, "data": combined})
+    return jsonify({"auth": False, "data": public_fields})
 
 def _auto_hide_worker():
     while True:
