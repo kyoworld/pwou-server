@@ -22,7 +22,7 @@ body {
 .printer-wrap {
   position: relative;
   width: 300px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 /* 본체 */
@@ -96,23 +96,16 @@ body {
     0 4px 8px rgba(0,0,0,0.5);
 }
 
-/* 프린터 아래로 나오는 종이 끝 */
-.paper-tip {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 62%;
-  height: 20px;
-  background: #fff;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.25), -2px 0 8px rgba(0,0,0,0.15);
-}
-
-/* 프린터 아래 영수증 스트림 */
+/* 프린터 슬롯에서 앞으로 나오는 영수증 스트림 */
+/* 슬롯 하단(35px)에서 시작하도록 음수 마진으로 끌어올림 */
 .receipt-stream {
+  position: relative;
+  z-index: 5; /* 프린터 본체 앞, 슬롯(z-index:10) 뒤 */
   width: 300px;
   display: flex;
   justify-content: center;
+  margin-top: -265px; /* -(300px height - 35px slot bottom) */
+  min-height: 265px;  /* 폼이 프린터 아래 유지되도록 */
   margin-bottom: 48px;
 }
 
@@ -271,7 +264,11 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   .printer-body { width:85vw; height:85vw; }
   .printer-legs { padding:0 28px; }
   .form-section { max-width:85vw; }
-  .receipt-stream { width:85vw; }
+  .receipt-stream {
+    width: 85vw;
+    margin-top: calc(-85vw + 35px);
+    min-height: calc(85vw - 35px);
+  }
 }
 
 @media (min-width:441px) {
@@ -286,7 +283,11 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   .e-bold    { font-size:12px; }
   .e-title   { font-size:11px; }
   .form-section { max-width:420px; }
-  .receipt-stream { width:420px; }
+  .receipt-stream {
+    width: 420px;
+    margin-top: -372px; /* -(420px height - 48px slot bottom) */
+    min-height: 372px;
+  }
   label { font-size:12px; }
   textarea { font-size:13px; }
   .btn-primary { font-size:13px; }
@@ -328,7 +329,6 @@ hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
   <div class="printer-body">
     <div class="printer-slot"></div>
     <span class="printer-brand">PWOU — 01</span>
-    <div class="paper-tip"></div>
   </div>
   <div class="printer-legs">
     <div class="printer-leg"></div>
