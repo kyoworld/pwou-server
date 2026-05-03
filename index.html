@@ -110,34 +110,22 @@ body {
 
 .receipt-tape {
   width: 100%;
-  background: #fff;
+  background: transparent;
   display: flex;
   flex-direction: column;
+  gap: 3px;
   transition: margin-top 0.6s cubic-bezier(0.33, 1, 0.68, 1);
-  box-shadow:
-    2px 0 8px rgba(0,0,0,0.3),
-    -2px 0 8px rgba(0,0,0,0.15),
-    0 6px 16px rgba(0,0,0,0.4);
 }
 
 /* 영수증 항목 */
 .receipt-entry {
   padding: 10px 12px;
-  border-bottom: none;
+  background: #fff;
   flex-shrink: 0;
   animation: feedIn 0.4s ease-out;
-  position: relative;
-}
-.receipt-entry:last-child::after { display: none; }
-.receipt-entry::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30%;
-  height: 1px;
-  background: #ccc;
+  box-shadow:
+    2px 0 8px rgba(0,0,0,0.3),
+    -2px 0 8px rgba(0,0,0,0.15);
 }
 .e-divider {
   font-size: 9px;
