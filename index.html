@@ -1,215 +1,1053 @@
 <!DOCTYPE html>
+
 <html lang="ko">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>PARALLEL WORLD OBSERVATION UNIT</title>
+
 <style>
+
 * { margin:0; padding:0; box-sizing:border-box; }
+
 body {
+
   background:#000; color:#fff;
+
   font-family:'Courier New',monospace;
+
   min-height:100vh;
+
   display:flex; flex-direction:column; align-items:center;
+
   padding:88px 20px 80px;
+
 }
 
-/* ── Ticker ── */
-#ticker-bar { position: fixed; top: 0; left: 0; width: 100%; height: 28px; background: #0c0c0c; border-bottom: 1px solid #1c1c1c; z-index: 500; display: flex; align-items: center; overflow: hidden; }
-.ticker-label { flex-shrink: 0; font-size: 8px; letter-spacing: 2px; color: #fff; opacity: 0.35; padding: 0 12px; border-right: 1px solid #1c1c1c; height: 100%; display: flex; align-items: center; }
-.ticker-window { flex: 1; overflow: hidden; height: 100%; display: flex; align-items: center; }
-.ticker-track { display: flex; width: max-content; animation: tickerScroll linear infinite; }
-.ticker-track span { font-size: 9px; letter-spacing: 1px; color: rgba(255,255,255,0.5); white-space: nowrap; padding-right: 80px; }
-@keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
 
 .header { text-align:center; margin-bottom:48px; }
+
 .header h1 { font-size:10px; letter-spacing:4px; opacity:.4; margin-bottom:6px; }
+
 .header h2 { font-size:9px; letter-spacing:3px; opacity:.25; }
 
-/* ── 프린터 ── */
-.printer-wrap { position: relative; width: 300px; z-index: 100; }
-.printer-body {
-  width: 300px; height: 120px; background: #EDE8DF; border-radius: 10px 10px 4px 4px;
-  position: relative; box-shadow: 6px 0 0 #D8D2C8, 0 8px 0 #CCC6BC, 6px 8px 0 #C2BCB2, 8px 16px 32px rgba(0,0,0,0.7);
-}
-.printer-slot {
-  position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
-  width: 70%; height: 10px; background: #1A1714; border-radius: 2px;
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.95); z-index: 110;
+
+
+/* ── 프린터 오브젝트 ── */
+
+.printer-wrap {
+
+  position: relative;
+
+  width: 300px;
+
+  margin-bottom: 0;
+
 }
 
-/* ── 영수증 스트림 (스크롤 가능) ── */
-.receipt-container {
-  width: 300px; height: 380px; overflow-y: auto; margin-top: -65px;
-  display: flex; flex-direction: column; align-items: center;
-  scrollbar-width: none;
-  mask-image: linear-gradient(to bottom, transparent 0px, black 30px);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 30px);
+
+
+/* 본체 */
+
+.printer-body {
+
+  width: 300px;
+
+  height: 300px;
+
+  background: #EDE8DF;
+
+  border-radius: 10px 10px 4px 4px;
+
+  position: relative;
+
+  /* 입체감: 오른쪽면, 아랫면 */
+
+  box-shadow:
+
+    /* 오른쪽 면 */
+
+    6px 0 0 #D8D2C8,
+
+    /* 아랫면 */
+
+    0 8px 0 #CCC6BC,
+
+    /* 오른쪽 아랫 모서리 */
+
+    6px 8px 0 #C2BCB2,
+
+    /* 전체 그림자 */
+
+    8px 16px 32px rgba(0,0,0,0.7),
+
+    2px 4px 10px rgba(0,0,0,0.4),
+
+    /* 상단 하이라이트 */
+
+    inset 0 1px 0 rgba(255,255,255,0.8);
+
+  overflow: hidden;
+
 }
-.receipt-container::-webkit-scrollbar { display: none; }
-.receipt-tape { width: 64%; display: flex; flex-direction: column; }
+
+
+
+/* 슬롯 */
+
+.printer-slot {
+
+  position: absolute;
+
+  top: 28px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 68%;
+
+  height: 7px;
+
+  background: #1A1714;
+
+  border-radius: 2px;
+
+  box-shadow:
+
+    inset 0 3px 6px rgba(0,0,0,0.95),
+
+    inset 0 -1px 2px rgba(0,0,0,0.5),
+
+    0 1px 0 rgba(255,255,255,0.15);
+
+  z-index: 10;
+
+}
+
+
+
+/* 브랜드 */
+
+.printer-brand {
+
+  position: absolute;
+
+  bottom: 20px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  font-size: 7px;
+
+  letter-spacing: 3px;
+
+  color: #A09880;
+
+  white-space: nowrap;
+
+}
+
+
+
+/* 다리 */
+
+.printer-legs {
+
+  position: absolute;
+
+  bottom: -16px;
+
+  left: 0; right: 0;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 0 36px;
+
+}
+
+.printer-leg {
+
+  width: 20px;
+
+  height: 16px;
+
+  background: #CCC6BC;
+
+  border-radius: 0 0 5px 5px;
+
+  box-shadow:
+
+    3px 0 0 #B8B2A8,
+
+    0 4px 8px rgba(0,0,0,0.5);
+
+}
+
+
+
+/* 프린터 슬롯에서 앞으로 나오는 영수증 스트림 */
+
+/* 슬롯 하단(35px)에서 시작하도록 음수 마진으로 끌어올림 */
+
+.receipt-stream {
+
+  position: relative;
+
+  z-index: 5; /* 프린터 본체 앞, 슬롯(z-index:10) 뒤 */
+
+  width: 300px;
+
+  display: flex;
+
+  justify-content: center;
+
+  margin-top: -265px; /* -(300px height - 35px slot bottom) */
+
+  min-height: 265px;  /* 폼이 프린터 아래 유지되도록 */
+
+  margin-bottom: 48px;
+
+}
+
+
+
+.receipt-tape {
+
+  width: 62%;
+
+  background: transparent;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+
+}
+
+
+
+/* 영수증 항목 */
 
 .receipt-entry {
-  padding: 15px 12px; background: #fff; flex-shrink: 0;
-  animation: feedIn 0.5s ease-out; box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-  border-bottom: 1px dashed #eee;
-}
-@keyframes feedIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
 
-/* ── 영수증 텍스트 스타일 ── */
-.e-divider { font-size: 9px; color: #bbb; letter-spacing: 0; margin: 2px 0; line-height: 1.2; overflow: hidden; white-space: nowrap; }
-.e-title { font-size: 8px; letter-spacing: 1px; color: #333; margin: 4px 0 2px; font-weight: bold; text-align: center; line-height: 1.4; }
-.e-line { font-size: 9px; color: #333; line-height: 1.6; white-space: pre-wrap; }
-.e-bold { font-size: 9px; color: #000; font-weight: bold; line-height: 1.6; }
+  padding: 10px 12px;
+
+  background: #fff;
+
+  flex-shrink: 0;
+
+  animation: feedIn 0.4s ease-out;
+
+  box-shadow:
+
+    2px 0 8px rgba(0,0,0,0.3),
+
+    -2px 0 8px rgba(0,0,0,0.15);
+
+}
+
+.e-divider {
+
+  font-size: 9px;
+
+  color: #bbb;
+
+  letter-spacing: 0;
+
+  margin: 2px 0;
+
+  line-height: 1.2;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+}
+
+.e-title {
+
+  font-size: 8px;
+
+  letter-spacing: 2px;
+
+  color: #999;
+
+  margin: 3px 0 2px;
+
+}
+
+.e-line {
+
+  font-size: 9px;
+
+  color: #333;
+
+  line-height: 1.6;
+
+  white-space: pre-wrap;
+
+}
+
+.e-bold {
+
+  font-size: 9px;
+
+  color: #111;
+
+  font-weight: bold;
+
+  line-height: 1.6;
+
+}
+
+
+
+@keyframes feedIn {
+
+  from { opacity: 0; transform: translateY(-6px); }
+
+  to   { opacity: 1; transform: translateY(0); }
+
+}
+
+
 
 /* ── Form ── */
-.form-section { width:100%; max-width:300px; margin-top: 20px; }
+
+.form-section { width:100%; max-width:300px; }
+
+
+
+label { font-size:10px; letter-spacing:2px; opacity:.4; display:block; margin-bottom:6px; }
+
 textarea {
-  width:100%; background:#0b0b0b; border:1px solid #1e1e1e; color:#fff;
-  font-family:inherit; font-size:12px; padding:11px; resize:none; margin-bottom:12px; outline:none;
+
+  width:100%; background:#0b0b0b; border:1px solid #1e1e1e;
+
+  color:#fff; font-family:'Courier New',monospace;
+
+  font-size:12px; padding:11px; resize:none; margin-bottom:14px;
+
+  outline:none; line-height:1.6;
+
 }
+
+textarea:focus { border-color:#333; }
+
+.status { font-size:10px; opacity:.4; margin-bottom:14px; min-height:15px; line-height:1.6; }
+
+.status.success { color:#fff; opacity:1; }
+
+.status.error   { color:#f55; opacity:1; }
+
 .btn-primary {
-  width:100%; background:#fff; color:#000; border:none; padding:12px;
-  font-family:inherit; font-size:11px; letter-spacing:2px; cursor:pointer;
+
+  width:100%; background:#fff; color:#000; border:none;
+
+  font-family:'Courier New',monospace; font-size:11px;
+
+  letter-spacing:3px; padding:12px; cursor:pointer; margin-bottom:8px;
+
 }
-.btn-primary:disabled { opacity:.2; }
+
+.btn-primary:disabled { opacity:.2; cursor:not-allowed; }
+
+.btn-secondary {
+
+  width:100%; background:none; color:#fff; border:1px solid #1c1c1c;
+
+  font-family:'Courier New',monospace; font-size:10px;
+
+  letter-spacing:2px; padding:10px; cursor:pointer; opacity:.4;
+
+}
+
+.btn-secondary:hover { opacity:.8; border-color:#333; }
+
+
+
+/* ── Overlay ── */
+
+#location-overlay {
+
+  position:fixed; inset:0; background:#000;
+
+  display:flex; align-items:center; justify-content:center;
+
+  z-index:100; padding:30px;
+
+}
+
+.overlay-inner { max-width:340px; width:100%; text-align:center; }
+
+.overlay-inner h3 { font-size:11px; letter-spacing:3px; opacity:.6; margin-bottom:26px; }
+
+.overlay-inner p  { font-size:10px; line-height:1.8; opacity:.45; margin-bottom:8px; }
+
+.overlay-inner .hl { opacity:.75; margin-bottom:26px; }
+
+.overlay-inner .btn-primary { margin-bottom:8px; }
+
+hr.div { border:none; border-top:1px solid #1a1a1a; margin:18px 0; }
+
+
+
+.toast {
+
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+
+  background:#fff; color:#000; font-family:'Courier New',monospace;
+
+  font-size:10px; letter-spacing:2px; padding:10px 22px;
+
+  opacity:0; transition:opacity .3s; pointer-events:none; z-index:200;
+
+}
+
+.toast.show { opacity:1; }
+
+
+
+/* ── Ticker ── */
+
+#ticker-bar {
+
+  position: fixed;
+
+  top: 0; left: 0;
+
+  width: 100%;
+
+  height: 28px;
+
+  background: #0c0c0c;
+
+  border-bottom: 1px solid #1c1c1c;
+
+  z-index: 500;
+
+  display: flex;
+
+  align-items: center;
+
+  overflow: hidden;
+
+}
+
+.ticker-label {
+
+  flex-shrink: 0;
+
+  font-size: 8px;
+
+  letter-spacing: 2px;
+
+  color: #fff;
+
+  opacity: 0.35;
+
+  padding: 0 12px;
+
+  border-right: 1px solid #1c1c1c;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  white-space: nowrap;
+
+}
+
+.ticker-window {
+
+  flex: 1;
+
+  overflow: hidden;
+
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+}
+
+.ticker-track {
+
+  display: flex;
+
+  width: max-content;
+
+  animation: tickerScroll linear infinite;
+
+}
+
+.ticker-track span {
+
+  font-size: 9px;
+
+  letter-spacing: 1px;
+
+  color: rgba(255,255,255,0.5);
+
+  white-space: nowrap;
+
+  padding-right: 80px;
+
+}
+
+@keyframes tickerScroll {
+
+  from { transform: translateX(0); }
+
+  to   { transform: translateX(-50%); }
+
+}
+
+
+
+@media (max-width:440px) {
+
+  body { padding:40px 14px 60px; }
+
+  .printer-wrap { width:85vw; }
+
+  .printer-body { width:85vw; height:85vw; }
+
+  .printer-legs { padding:0 28px; }
+
+  .form-section { max-width:85vw; }
+
+  .receipt-stream {
+
+    width: 85vw;
+
+    margin-top: calc(-85vw + 35px);
+
+    min-height: calc(85vw - 35px);
+
+  }
+
+}
+
+
 
 @media (min-width:441px) {
-  .printer-wrap, .printer-body { width: 400px; }
-  .receipt-container { width: 400px; margin-top: -85px; }
-  .e-line, .e-bold, .e-divider, .e-title { font-size: 11px; }
+
+  .printer-wrap { width:420px; }
+
+  .printer-body { width:420px; height:420px; }
+
+  .printer-slot { top:39px; height:9px; }
+
+  .printer-brand { font-size:9px; bottom:28px; }
+
+  .receipt-entry { padding:13px 16px; }
+
+  .e-line    { font-size:12px; }
+
+  .e-nowrap  { white-space:nowrap; overflow:hidden; }
+
+  .e-divider { font-size:12px; }
+
+  .e-bold    { font-size:12px; }
+
+  .e-title   { font-size:11px; }
+
+  .form-section { max-width:420px; }
+
+  .receipt-stream {
+
+    width: 420px;
+
+    margin-top: -372px; /* -(420px height - 48px slot bottom) */
+
+    min-height: 372px;
+
+  }
+
+  label { font-size:12px; }
+
+  textarea { font-size:13px; }
+
+  .btn-primary { font-size:13px; }
+
+  .btn-secondary { font-size:12px; }
+
+  .status { font-size:12px; }
+
 }
+
 </style>
+
 </head>
+
 <body>
 
+
+
 <div id="ticker-bar">
+
   <div class="ticker-label">◉ LIVE</div>
-  <div class="ticker-window"><div id="ticker-track" class="ticker-track"><span id="ticker-a"></span><span id="ticker-b"></span></div></div>
+
+  <div class="ticker-window">
+
+    <div id="ticker-track" class="ticker-track">
+
+      <span id="ticker-a"></span><span id="ticker-b"></span>
+
+    </div>
+
+  </div>
+
 </div>
+
+
+
+<div id="location-overlay" style="display:none;">
+
+  <div class="overlay-inner">
+
+    <h3>SIGNAL ACQUISITION</h3>
+
+    <p>본 장치는 차원 이탈 현상을 정확히 기록하기 위해<br>제보자의 <strong style="opacity:1">위치 좌표</strong>가 필요합니다.</p>
+
+    <hr class="div">
+
+    <p class="hl">수집 항목: GPS 좌표, 국가 정보<br>
+
+    수집하지 않는 항목: IP, 이름, 기기정보<br>
+
+    모든 제보는 완전 익명으로 처리됩니다.</p>
+
+    <button class="btn-primary" onclick="requestLocation()">위치 정보 허용 — 제보 시작</button>
+
+    <button class="btn-secondary" onclick="goToBoard()">거부 — 현황 확인만</button>
+
+  </div>
+
+</div>
+
+
 
 <div class="header">
+
   <h1>PARALLEL WORLD OBSERVATION UNIT</h1>
+
   <h2>SIGNAL SUBMISSION TERMINAL</h2>
+
 </div>
+
+
 
 <div class="printer-wrap">
-  <div class="printer-body"><div class="printer-slot"></div></div>
+
+  <div class="printer-body">
+
+    <div class="printer-slot"></div>
+
+    <span class="printer-brand">PWOU — 01</span>
+
+  </div>
+
+  <div class="printer-legs">
+
+    <div class="printer-leg"></div>
+
+    <div class="printer-leg"></div>
+
+  </div>
+
 </div>
 
-<div class="receipt-container" id="receipt-container">
+
+
+<div class="receipt-stream">
+
   <div class="receipt-tape" id="receipt"></div>
+
 </div>
+
+
 
 <div class="form-section">
-  <textarea id="desc" rows="4" placeholder="Describe the anomaly..."></textarea>
-  <div id="status" style="font-size:10px; opacity:.4; margin-bottom:12px;">ACQUIRING COORDINATES...</div>
+
+  <label>ANOMALY DESCRIPTION</label>
+
+  <textarea id="desc" rows="4" placeholder="목격한 이상 현상을 기술하세요&#10;Describe the anomaly you witnessed..."></textarea>
+
+  <div class="status" id="status">ACQUIRING COORDINATES...</div>
+
   <button class="btn-primary" id="btn" onclick="submitReport()" disabled>TRANSMIT SIGNAL</button>
+
+  <button class="btn-secondary" onclick="location.href='/board'">LIVE FEED →</button>
+
 </div>
 
+<div class="toast" id="toast">SIGNAL RECORDED</div>
+
+
+
 <script>
-let userLat = null, userLon = null, userCountry = 'UNKNOWN';
+
+const SERVER = '';
+
+let userLat = null, userLon = null, userCountry = null;
+
 const knownIds = new Set();
+
+
 
 function pad(n, len) { return String(n).padStart(len, '0'); }
 
-// 지정된 로그 포맷 생성 함수
-function makeEntry(r) {
-  const div = document.createElement('div');
-  div.className = 'receipt-entry';
-  
-  const ts = r.timestamp || "";
-  const date = ts.split(' ')[0] || '2026-00-00';
-  const time = ts.split(' ')[1] || '00:00:00';
-  
-  const lat = r.latitude != null ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') : '0.0000 N';
-  const lon = r.longitude != null ? Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W') : '0.0000 E';
-  const region = (r.country || 'UNKNOWN').toUpperCase();
-  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(r.id || 0, 4);
-  
-  // 랜덤 SHIFT 값 생성 (입력 당시의 정밀 기록 느낌)
-  const shiftVal = (Math.random() * (0.9 - 0.1) + 0.1).toFixed(8);
 
-  div.innerHTML = `
-    <div class="e-divider">================================</div>
-    <div class="e-title">PARALLEL WORLD OBSERVATION UNIT<br>AUTOMATED LOG RECEIPT</div>
-    <div class="e-divider">&nbsp;</div>
-    <div class="e-line">DATE : ${date}</div>
-    <div class="e-line">TIME : ${time}</div>
-    <div class="e-line">COORD : ${lat} / ${lon}</div>
-    <div class="e-line">REGION : ${region}</div>
-    <div class="e-line">&nbsp;</div>
-    <div class="e-line">EVENT NO.</div>
-    <div class="e-bold">${eventNo}</div>
-    <div class="e-title">---- LOG DETAILS ----</div>
-    <div class="e-line">${r.description}</div>
-    <div class="e-divider">-----------------</div>
-    <div class="e-line">STATUS : RECORDED</div>
-    <div class="e-line">CHANNEL : STABILIZING</div>
-    <div class="e-line">SHIFT : CH +${shiftVal}</div>
-    <div class="e-divider">================================</div>
-  `;
+
+function makeEntry(r) {
+
+  const div = document.createElement('div');
+
+  div.className = 'receipt-entry';
+
+
+
+  const date = (r.timestamp || '').split(' ')[0] || '—';
+
+  const time = (r.timestamp || '').split(' ')[1] || '—';
+
+  const coord = r.latitude != null
+
+    ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') +
+
+      ' / ' + Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W')
+
+    : '—';
+
+  const region = (r.country || 'UNKNOWN').toUpperCase();
+
+  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(r.id, 4);
+
+
+
+  div.innerHTML =
+
+    '<div class="e-divider">================================</div>' +
+
+    '<div class="e-line">DATE : ' + date + '</div>' +
+
+    '<div class="e-line">TIME : ' + time + '</div>' +
+
+    '<div class="e-line e-nowrap">COORD : ' + coord + '</div>' +
+
+    '<div class="e-line">REGION : ' + region + '</div>' +
+
+    '<div class="e-line">&nbsp;</div>' +
+
+    '<div class="e-line">EVENT NO.</div>' +
+
+    '<div class="e-bold">' + eventNo + '</div>' +
+
+    '<div class="e-title">---- LOG DETAILS ----</div>' +
+
+    '<div class="e-line">' + r.description + '</div>' +
+
+    '<div class="e-divider">-----------------</div>' +
+
+    '<div class="e-line">STATUS : RECORDED</div>' +
+
+    '<div class="e-line">CHANNEL : STABILIZING</div>' +
+
+    '<div class="e-divider">================================</div>';
+
   return div;
+
 }
+
+
+
+function todayStr() {
+
+  return new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
+
+}
+
+
+
+let tickerCount = 0;
+
+
+
+function formatTickerText(items) {
+
+  if (!items.length) return 'NO SIGNALS DETECTED';
+
+  return items.map(r => {
+
+    const coord = r.latitude != null
+
+      ? Math.abs(r.latitude).toFixed(4) + (r.latitude >= 0 ? ' N' : ' S') +
+
+        ' / ' + Math.abs(r.longitude).toFixed(4) + (r.longitude >= 0 ? ' E' : ' W')
+
+      : 'UNKNOWN';
+
+    return 'COORD ' + coord + ' — ' + r.description;
+
+  }).join('     ◆     ');
+
+}
+
+
+
+function updateTicker(items) {
+
+  const text = formatTickerText(items) + '     ◆     ';
+
+  document.getElementById('ticker-a').textContent = text;
+
+  document.getElementById('ticker-b').textContent = text;
+
+  const track = document.getElementById('ticker-track');
+
+  track.style.animation = 'none';
+
+  void track.offsetWidth;
+
+  requestAnimationFrame(() => {
+
+    const w = track.scrollWidth / 2;
+
+    track.style.animation = 'tickerScroll ' + (w / 60) + 's linear infinite';
+
+  });
+
+}
+
+
 
 async function poll() {
+
   try {
-    const res = await fetch('/api/submissions');
-    const json = await res.json();
-    const data = json.data || [];
+
+    const json = await fetch('/api/submissions').then(r => r.json());
+
+    const allData = json.data || [];
+
+    const today = todayStr();
+
+    const entries = [...allData].reverse();
+
     const tape = document.getElementById('receipt');
-    const container = document.getElementById('receipt-container');
-    
-    data.sort((a,b) => a.id - b.id).forEach(r => {
+
+    for (const r of entries) {
+
       if (!knownIds.has(r.id)) {
+
         knownIds.add(r.id);
-        tape.appendChild(makeEntry(r));
-        container.scrollTop = container.scrollHeight;
+
+        const entryDate = (r.timestamp || '').split(' ')[0];
+
+        if (entryDate === today) {
+
+          tape.appendChild(makeEntry(r));
+
+        }
+
       }
-    });
-    
-    const tickerText = data.slice(-10).map(r => `COORD ${r.latitude?.toFixed(2)} — ${r.description}`).join('    ◆    ');
-    document.getElementById('ticker-a').textContent = tickerText + '    ◆    ';
-    document.getElementById('ticker-b').textContent = tickerText + '    ◆    ';
+
+    }
+
+    if (allData.length !== tickerCount) {
+
+      tickerCount = allData.length;
+
+      updateTicker(allData.slice(0, 30)); // 최신 30개, newest first
+
+    }
+
   } catch (e) {}
+
 }
+
+
+
+poll();
+
+setInterval(poll, 1000);
+
+
+
+function goToBoard() { window.location.replace('/board'); }
+
+
+
+function getCountryFromCoords(lat, lon) {
+
+  return fetch(
+
+    'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json',
+
+    { headers: { 'Accept-Language': 'en' } }
+
+  ).then(r => r.json())
+
+   .then(d => d.address && d.address.country ? d.address.country : 'UNKNOWN')
+
+   .catch(() => 'UNKNOWN');
+
+}
+
+
+
+function setCoordStatus() {
+
+  document.getElementById('status').className = 'status';
+
+  document.getElementById('status').textContent =
+
+    'COORD: ' + userLat.toFixed(4) + ' / ' + userLon.toFixed(4) + ' — ' + userCountry.toUpperCase();
+
+}
+
+
+
+function requestLocation() {
+
+  navigator.geolocation.getCurrentPosition(async function(pos) {
+
+    userLat = pos.coords.latitude;
+
+    userLon = pos.coords.longitude;
+
+    userCountry = await getCountryFromCoords(userLat, userLon);
+
+    setCoordStatus();
+
+    document.getElementById('btn').disabled = false;
+
+    document.getElementById('location-overlay').style.display = 'none';
+
+  }, goToBoard);
+
+}
+
+
+
+function initLocation() {
+
+  if (!navigator.geolocation) { goToBoard(); return; }
+
+  navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+
+    if (result.state === 'granted') {
+
+      navigator.geolocation.getCurrentPosition(async function(pos) {
+
+        userLat = pos.coords.latitude;
+
+        userLon = pos.coords.longitude;
+
+        userCountry = await getCountryFromCoords(userLat, userLon);
+
+        setCoordStatus();
+
+        document.getElementById('btn').disabled = false;
+
+      });
+
+    } else if (result.state === 'denied') {
+
+      goToBoard();
+
+    } else {
+
+      document.getElementById('location-overlay').style.display = 'flex';
+
+    }
+
+  }).catch(function() {
+
+    document.getElementById('location-overlay').style.display = 'flex';
+
+  });
+
+}
+
+
+
+window.addEventListener('pageshow', initLocation);
+
+
 
 async function submitReport() {
+
   const desc = document.getElementById('desc').value.trim();
-  if(!desc) return;
+
+  if (!desc) return;
+
+  if (desc === 'pwou2026') { window.location.href = '/admin'; return; }
+
   document.getElementById('btn').disabled = true;
+
+  document.getElementById('status').textContent = 'TRANSMITTING...';
+
   try {
-    await fetch('/submit', {
+
+    await fetch(SERVER + '/submit', {
+
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+
+      headers: { 'Content-Type': 'application/json' },
+
       body: JSON.stringify({ description: desc, latitude: userLat, longitude: userLon, country: userCountry })
+
     });
+
+    document.getElementById('status').className = 'status success';
+
+    document.getElementById('status').textContent = 'SIGNAL RECORDED. RECEIPT PENDING.';
+
     document.getElementById('desc').value = '';
-    poll();
-  } catch(e){}
-  document.getElementById('btn').disabled = false;
+
+    const toast = document.getElementById('toast');
+
+    toast.classList.add('show');
+
+    setTimeout(() => toast.classList.remove('show'), 2500);
+
+    setTimeout(() => {
+
+      document.getElementById('btn').disabled = false;
+
+      setCoordStatus();
+
+    }, 3000);
+
+  } catch (e) {
+
+    document.getElementById('status').className = 'status error';
+
+    document.getElementById('status').textContent = 'TRANSMISSION FAILED. RETRY.';
+
+    document.getElementById('btn').disabled = false;
+
+  }
+
 }
 
-// 위치 기반 데이터 획득
-navigator.geolocation.getCurrentPosition(async (pos) => {
-  userLat = pos.coords.latitude;
-  userLon = pos.coords.longitude;
-  
-  // 국가 정보 역지오코딩 (OpenStreetMap 무료 API 사용)
-  try {
-    const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${userLat}&lon=${userLon}&format=json`).then(r => r.json());
-    userCountry = geo.address.country || 'UNKNOWN';
-  } catch(e) { userCountry = 'UNKNOWN'; }
-
-  document.getElementById('status').textContent = `COORD: ${userLat.toFixed(4)} / ${userLon.toFixed(4)} — ${userCountry.toUpperCase()}`;
-  document.getElementById('btn').disabled = false;
-}, () => {
-  document.getElementById('status').textContent = "LOCATION ACCESS DENIED";
-  document.getElementById('btn').disabled = false;
-});
-
-setInterval(poll, 2000);
-poll();
 </script>
+
 </body>
+
 </html>
