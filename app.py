@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
-from datetime import datetime
+import threading
+import time
+from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
@@ -61,9 +63,13 @@ def submit():
 
 @app.route('/pending', methods=['GET'])
 def pending():
+    cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
-    c.execute('SELECT * FROM submissions WHERE printed = 0 AND hidden = 0 ORDER BY id ASC LIMIT 1')
+    c.execute(
+        'SELECT * FROM submissions WHERE printed = 0 AND hidden = 0 AND timestamp > %s ORDER BY id ASC LIMIT 1',
+        (cutoff,)
+    )
     row = c.fetchone()
     conn.close()
     if row:
@@ -101,6 +107,21 @@ def get_submissions():
         return jsonify({"auth": True, "data": result})
     public = [r for r in result if not r.get('hidden')]
     return jsonify({"auth": False, "data": [{"id": r["id"], "description": r["description"], "country": r["country"], "timestamp": r["timestamp"], "latitude": r["latitude"], "longitude": r["longitude"]} for r in public]})
+
+def _auto_hide_worker():
+    while True:
+        try:
+            cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+            conn = get_conn()
+            c = conn.cursor()
+            c.execute("UPDATE submissions SET hidden = 1 WHERE hidden = 0 AND timestamp < %s", (cutoff,))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+        time.sleep(600)  # 10분마다 실행
+
+threading.Thread(target=_auto_hide_worker, daemon=True).start()
 
 if __name__ == '__main__':
     init_db()
