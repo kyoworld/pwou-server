@@ -1,5 +1,16 @@
 import random
 from datetime import datetime, timedelta
+from timezonefinder import TimezoneFinder
+import pytz
+
+_tf = TimezoneFinder()
+
+def _local_time(utc_dt, lat, lon):
+    tz_name = _tf.timezone_at(lat=lat, lng=lon)
+    if not tz_name:
+        return utc_dt.strftime("%Y-%m-%d %H:%M:%S")
+    local_dt = pytz.utc.localize(utc_dt).astimezone(pytz.timezone(tz_name))
+    return local_dt.strftime("%Y-%m-%d %H:%M:%S")
 
 country_bounds = {
     "KO":  {"name": "KOREA",   "lat": (34.0, 38.0),  "lon": (126.0, 129.0)},
@@ -97,13 +108,14 @@ def get_seed_entries():
         lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * entry_rng.random()
         lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * entry_rng.random()
 
+        slot_time = day_start + timedelta(seconds=cursor)
         entries.append({
             "id":          -(slot_num + 1),
             "description": description,
             "country":     b["name"],
             "latitude":    round(lat, 4),
             "longitude":   round(lon, 4),
-            "timestamp":   (day_start + timedelta(seconds=cursor)).strftime("%Y-%m-%d %H:%M:%S"),
+            "timestamp":   _local_time(slot_time, lat, lon),
         })
 
         slot_num += 1
