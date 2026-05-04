@@ -6,9 +6,10 @@ from datetime import datetime, timedelta
 import msvcrt
 
 # ================= 설정 구역 =================
-PRINTER_NAME = "pos76"
-SERVER_URL   = "https://web-production-a4443.up.railway.app"
-INTERVALS    = [5, 7, 10, 20, 33]  # 시드 출력 후 대기 시간(초)
+PRINTER_NAME   = "pos76"
+SERVER_URL     = "https://web-production-a4443.up.railway.app"
+SEED_WAIT_MIN  = 8 * 60   # 시드 출력 후 최소 대기 (초) — 기본 8분
+SEED_WAIT_MAX  = 25 * 60  # 시드 출력 후 최대 대기 (초) — 기본 25분
 # ============================================
 
 # ── 시드 데이터 ──────────────────────────────
@@ -220,6 +221,28 @@ def print_seed():
 def main():
     is_paused = False
     print("-" * 50)
+    # 프린터 연결 확인
+    try:
+        printers = [p[2] for p in win32print.EnumPrinters(2)]
+        if PRINTER_NAME in printers:
+            print(f"✓ 프린터 연결 확인: {PRINTER_NAME}")
+        else:
+            print(f"✗ 프린터 없음! 연결된 프린터 목록:")
+            for p in printers:
+                print(f"  - {p}")
+            print("PRINTER_NAME을 위 목록 중 하나로 바꿔주세요.")
+            input("계속하려면 Enter...")
+    except Exception as e:
+        print(f"✗ 프린터 확인 오류: {e}")
+
+    # 서버 연결 확인
+    try:
+        r = requests.get(f"{SERVER_URL}/pending", timeout=5)
+        print(f"✓ 서버 연결 확인: {SERVER_URL}")
+    except Exception as e:
+        print(f"✗ 서버 연결 실패: {e}")
+        print("인터넷 연결 확인 후 다시 실행해주세요.")
+        input("계속하려면 Enter...")
     print("PWOU 프린터 시스템 가동")
     print(f"서버: {SERVER_URL}")
     print(f"프린터: {PRINTER_NAME}")
@@ -246,8 +269,8 @@ def main():
 
             # ── 실제 제보 없으면 시드 출력 ──
             print_seed()
-            wait = random.choice(INTERVALS)
-            print(f"대기 중... ({wait}초)  [실제 제보 감지 시 즉시 출력]")
+            wait = random.randint(SEED_WAIT_MIN, SEED_WAIT_MAX)
+            print(f"대기 중... ({wait//60}분 {wait%60}초)  [실제 제보 감지 시 즉시 출력]")
 
             # 대기 중에도 1초마다 실제 제보 체크
             for _ in range(wait):
