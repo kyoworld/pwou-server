@@ -119,6 +119,6 @@ def get_seed_entries():
         })
 
         slot_num += 1
-        cursor += interval_rng.choice(SEED_INTERVALS)
+        cursor += SEED_INTERVALS[interval_rng.randint(0, len(SEED_INTERVALS) - 1)]
 
     return entries
