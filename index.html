@@ -799,9 +799,9 @@ function makeEntry(r) {
 
   const region = (r.country || 'UNKNOWN').toUpperCase();
 
-  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(r.id, 4);
+  const eventNo = 'PW-' + date.replace(/-/g, '') + '.' + pad(Math.abs(r.id), 4);
 
-
+  const desc = (r.description || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   div.innerHTML =
 
@@ -823,7 +823,7 @@ function makeEntry(r) {
 
     '<div class="e-title">---- LOG DETAILS ----</div>' +
 
-    '<div class="e-line">' + r.description + '</div>' +
+    '<div class="e-line">' + desc + '</div>' +
 
     '<div class="e-divider">-----------------</div>' +
 
