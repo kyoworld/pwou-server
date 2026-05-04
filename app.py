@@ -114,7 +114,7 @@ def get_submissions():
                      for r in public]
     return jsonify({"auth": False, "data": public_fields})
 
-_SEED_INTERVALS = [10, 40, 60, 180, 300]
+_SEED_INTERVALS = [10, 20, 30, 60]
 
 def _seed_insert_worker():
     while True:
