@@ -256,7 +256,7 @@ body {
 
   max-height: 280px;
 
-  overflow: visible;
+  overflow-y: auto;
 
   scrollbar-width: none;
 
@@ -778,8 +778,6 @@ function pad(n, len) { return String(n).padStart(len, '0'); }
 
 
 function makeEntry(r) {
-
-  console.log('[makeEntry] id=' + r.id + ' country=' + r.country + ' ts=' + r.timestamp);
 
   const div = document.createElement('div');
 
