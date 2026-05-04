@@ -1,12 +1,13 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
+import random
 import threading
 import time
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from seed_data import get_seed_entries
+from seed_data import get_random_seed_entry
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -63,13 +64,9 @@ def submit():
     conn.close()
     return jsonify({"status": "ok"})
 
-_seed_printed = set()  # 출력된 시드 ID 추적 (서버 재시작 시 초기화)
-
 @app.route('/pending', methods=['GET'])
 def pending():
     cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
-
-    # 실제 제보 중 가장 오래된 미출력 항목
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
     c.execute(
@@ -78,29 +75,8 @@ def pending():
     )
     row = c.fetchone()
     conn.close()
-    real = dict(row) if row else None
-
-    use_seed = os.environ.get('USE_SEED_DATA', 'false').lower() == 'true'
-    if not use_seed:
-        if real:
-            return jsonify({**real, "type": "real"})
-        return jsonify(None)
-
-    # 시드 중 아직 출력 안 된 가장 오래된 항목
-    seeds = get_seed_entries()  # 시간순 정렬
-    next_seed = next((s for s in seeds if s['id'] not in _seed_printed), None)
-
-    # 둘 중 timestamp가 더 이른 것 반환
-    if real and next_seed:
-        if real['timestamp'] <= next_seed['timestamp']:
-            return jsonify({**real, "type": "real"})
-        _seed_printed.add(next_seed['id'])
-        return jsonify({**next_seed, "type": "seed"})
-    if real:
-        return jsonify({**real, "type": "real"})
-    if next_seed:
-        _seed_printed.add(next_seed['id'])
-        return jsonify({**next_seed, "type": "seed"})
+    if row:
+        return jsonify({**dict(row), "type": "real"})
     return jsonify(None)
 
 @app.route('/mark_printed/<int:submission_id>', methods=['POST'])
@@ -136,11 +112,27 @@ def get_submissions():
     public_fields = [{"id": r["id"], "description": r["description"], "country": r["country"],
                       "timestamp": r["timestamp"], "latitude": r["latitude"], "longitude": r["longitude"]}
                      for r in public]
-    if os.environ.get('USE_SEED_DATA', 'false').lower() == 'true':
-        combined = public_fields + get_seed_entries()
-        combined.sort(key=lambda x: x.get('timestamp') or '', reverse=True)
-        return jsonify({"auth": False, "data": combined})
     return jsonify({"auth": False, "data": public_fields})
+
+_SEED_INTERVALS = [10, 40, 60, 180, 300]
+
+def _seed_insert_worker():
+    while True:
+        time.sleep(random.choice(_SEED_INTERVALS))
+        if os.environ.get('USE_SEED_DATA', 'false').lower() != 'true':
+            continue
+        try:
+            entry = get_random_seed_entry()
+            conn = get_conn()
+            c = conn.cursor()
+            c.execute(
+                "INSERT INTO submissions (description, latitude, longitude, country, timestamp, printed) VALUES (%s, %s, %s, %s, %s, 0)",
+                (entry["description"], entry["latitude"], entry["longitude"], entry["country"], entry["timestamp"])
+            )
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"[seed] insert error: {e}")
 
 def _auto_hide_worker():
     while True:
@@ -155,6 +147,7 @@ def _auto_hide_worker():
             pass
         time.sleep(600)  # 10분마다 실행
 
+threading.Thread(target=_seed_insert_worker, daemon=True).start()
 threading.Thread(target=_auto_hide_worker, daemon=True).start()
 
 if __name__ == '__main__':

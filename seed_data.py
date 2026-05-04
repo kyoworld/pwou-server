@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 from timezonefinder import TimezoneFinder
 import pytz
 
@@ -85,40 +85,15 @@ _SEED_RAW = (
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
-SEED_INTERVALS = [10, 40, 60]  # 시드 간격 후보 (초)
-
-def get_seed_entries():
-    now = datetime.now()
-    day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    elapsed = int((now - day_start).total_seconds())
-
-    # 오늘 날짜를 시드로 고정 → 같은 날 API 호출 시 항상 동일한 스케줄
-    day_seed = int(day_start.timestamp())
-    interval_rng = random.Random(day_seed)          # 간격 결정용
-    cursor = 0                                       # 자정부터 경과 초
-
-    entries = []
-    slot_num = 0
-
-    while slot_num < len(_SEED_RAW) and cursor <= elapsed:
-        entry_rng = random.Random(day_seed + slot_num * 997 + 1)
-        idx = entry_rng.randint(0, len(_SEED_RAW) - 1)
-        code, description = _SEED_RAW[idx]
-        b = country_bounds[code]
-        lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * entry_rng.random()
-        lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * entry_rng.random()
-
-        slot_time = day_start + timedelta(seconds=cursor)
-        entries.append({
-            "id":          -(slot_num + 1),
-            "description": description,
-            "country":     b["name"],
-            "latitude":    round(lat, 4),
-            "longitude":   round(lon, 4),
-            "timestamp":   _local_time(slot_time, lat, lon),
-        })
-
-        slot_num += 1
-        cursor += SEED_INTERVALS[interval_rng.randint(0, len(SEED_INTERVALS) - 1)]
-
-    return entries
+def get_random_seed_entry():
+    code, description = random.choice(_SEED_RAW)
+    b = country_bounds[code]
+    lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * random.random()
+    lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * random.random()
+    return {
+        "description": description,
+        "country":     b["name"],
+        "latitude":    round(lat, 4),
+        "longitude":   round(lon, 4),
+        "timestamp":   _local_time(datetime.utcnow(), lat, lon),
+    }

@@ -42,19 +42,23 @@ tr:hover td { background:#0a0a0a; }
 <tbody id="feed"></tbody>
 </table>
 <script>
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 async function load() {
-  const res = await fetch('/api/submissions');
-  const json = await res.json();
-  const tbody = document.getElementById('feed');
-  tbody.innerHTML = json.data.map(r => `
-    <tr>
-      <td class="country">${String(r.id).padStart(4,'0')}</td>
-      <td class="time">${r.timestamp || '-'}</td>
-      <td class="country">${(r.country || 'UNKNOWN').toUpperCase()}</td>
-      <td class="coord">${r.latitude ? r.latitude.toFixed(4)+' / '+r.longitude.toFixed(4) : '-'}</td>
-      <td class="desc">${r.description}</td>
-    </tr>
-  `).join('');
+  try {
+    const json = await fetch('/api/submissions').then(r => r.json());
+    const rows = json.data || [];
+    document.getElementById('feed').innerHTML = rows.map(r => `
+      <tr>
+        <td class="country">${String(Math.abs(r.id)).padStart(4,'0')}</td>
+        <td class="time">${esc(r.timestamp) || '-'}</td>
+        <td class="country">${esc((r.country || 'UNKNOWN').toUpperCase())}</td>
+        <td class="coord">${r.latitude != null ? r.latitude.toFixed(4)+' / '+r.longitude.toFixed(4) : '-'}</td>
+        <td class="desc">${esc(r.description)}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error('[load]', e); }
 }
 load();
 setInterval(load, 5000);
