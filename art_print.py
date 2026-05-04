@@ -8,7 +8,7 @@ import msvcrt
 # ================= 설정 구역 =================
 PRINTER_NAME  = "pos76"
 SERVER_URL    = "https://web-production-a4443.up.railway.app"
-POLL_INTERVAL = 30   # 대기 항목 없을 때 재확인 간격 (초)
+POLL_INTERVAL = 2    # 대기 항목 없을 때 재확인 간격 (초)
 # ============================================
 
 def _format_coord(lat, lon):
