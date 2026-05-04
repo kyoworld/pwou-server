@@ -85,7 +85,7 @@ _SEED_RAW = (
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
-SEED_INTERVALS = [10, 40, 60, 180, 300, 480, 600, 900]  # 시드 간격 후보 (초)
+SEED_INTERVALS = [10, 40, 60]  # 시드 간격 후보 (초)
 
 def get_seed_entries():
     now = datetime.now()
