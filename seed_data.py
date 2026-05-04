@@ -74,29 +74,41 @@ _SEED_RAW = (
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
-SLOT_SECONDS = 60  # 1분마다 새 시드 항목 1개 추가
+# 전세계에서 드문드문 올리는 느낌: 8~25분 랜덤 간격
+SEED_MIN_INTERVAL = 8 * 60    # 최소 8분
+SEED_MAX_INTERVAL = 25 * 60   # 최대 25분
 
 def get_seed_entries():
     now = datetime.now()
     day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     elapsed = int((now - day_start).total_seconds())
-    n_slots = min(elapsed // SLOT_SECONDS + 1, len(_SEED_RAW))
+
+    # 오늘 날짜를 시드로 고정 → 같은 날 API 호출 시 항상 동일한 스케줄
+    day_seed = int(day_start.timestamp())
+    interval_rng = random.Random(day_seed)          # 간격 결정용
+    cursor = 0                                       # 자정부터 경과 초
 
     entries = []
-    for i in range(n_slots):
-        slot_time = day_start + timedelta(seconds=i * SLOT_SECONDS)
-        rng = random.Random(int(slot_time.timestamp()))
-        idx = rng.randint(0, len(_SEED_RAW) - 1)
+    slot_num = 0
+
+    while slot_num < len(_SEED_RAW) and cursor <= elapsed:
+        entry_rng = random.Random(day_seed + slot_num * 997 + 1)
+        idx = entry_rng.randint(0, len(_SEED_RAW) - 1)
         code, description = _SEED_RAW[idx]
         b = country_bounds[code]
-        lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * rng.random()
-        lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * rng.random()
+        lat = b["lat"][0] + (b["lat"][1] - b["lat"][0]) * entry_rng.random()
+        lon = b["lon"][0] + (b["lon"][1] - b["lon"][0]) * entry_rng.random()
+
         entries.append({
-            "id":          -(i + 1),      # 매일 초기화, 1분마다 ID 증가
+            "id":          -(slot_num + 1),
             "description": description,
             "country":     b["name"],
             "latitude":    round(lat, 4),
             "longitude":   round(lon, 4),
-            "timestamp":   slot_time.strftime("%Y-%m-%d %H:%M:%S"),  # 실제 발생 시각
+            "timestamp":   (day_start + timedelta(seconds=cursor)).strftime("%Y-%m-%d %H:%M:%S"),
         })
+
+        slot_num += 1
+        cursor += interval_rng.randint(SEED_MIN_INTERVAL, SEED_MAX_INTERVAL)
+
     return entries
