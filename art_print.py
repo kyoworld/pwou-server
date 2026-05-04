@@ -8,8 +8,7 @@ import msvcrt
 # ================= 설정 구역 =================
 PRINTER_NAME   = "pos76"
 SERVER_URL     = "https://web-production-a4443.up.railway.app"
-SEED_WAIT_MIN  = 8 * 60   # 시드 출력 후 최소 대기 (초) — 기본 8분
-SEED_WAIT_MAX  = 25 * 60  # 시드 출력 후 최대 대기 (초) — 기본 25분
+SEED_INTERVALS = [10, 40, 60, 180, 300, 480, 600, 900]  # 시드 출력 후 대기 후보 (초)
 # ============================================
 
 # ── 시드 데이터 ──────────────────────────────
@@ -269,7 +268,7 @@ def main():
 
             # ── 실제 제보 없으면 시드 출력 ──
             print_seed()
-            wait = random.randint(SEED_WAIT_MIN, SEED_WAIT_MAX)
+            wait = random.choice(SEED_INTERVALS)
             print(f"대기 중... ({wait//60}분 {wait%60}초)  [실제 제보 감지 시 즉시 출력]")
 
             # 대기 중에도 1초마다 실제 제보 체크
