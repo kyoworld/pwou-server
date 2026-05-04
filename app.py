@@ -129,6 +129,7 @@ _seed_today_date  = None
 
 def _seed_insert_worker():
     global _seed_today_count, _seed_today_date
+    print("[SEED] worker started")
     while True:
         time.sleep(random.choice(_SEED_INTERVALS))
         if os.environ.get('USE_SEED_DATA', 'false').lower() != 'true':
@@ -159,6 +160,7 @@ def _seed_insert_worker():
             conn.commit()
             conn.close()
             _seed_today_count += 1
+            print(f"[SEED] inserted: {entry['country']} {entry['timestamp']}")
         except Exception as e:
             print(f"[seed] insert error: {e}")
 
