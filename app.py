@@ -69,6 +69,15 @@ def pending():
     cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
+    # 미출력 항목이 5개 이상 쌓여있으면 None 반환 (백프레셔)
+    c.execute(
+        'SELECT COUNT(*) FROM submissions WHERE printed = 0 AND hidden = 0 AND timestamp > %s',
+        (cutoff,)
+    )
+    backlog = c.fetchone()['count']
+    if backlog >= 5:
+        conn.close()
+        return jsonify(None)
     c.execute(
         'SELECT * FROM submissions WHERE printed = 0 AND hidden = 0 AND timestamp > %s ORDER BY id ASC LIMIT 1',
         (cutoff,)
@@ -115,11 +124,20 @@ def get_submissions():
     return jsonify({"auth": False, "data": public_fields})
 
 _SEED_INTERVALS = [10, 20, 30, 60]
+_seed_today_count = 0
+_seed_today_date  = None
 
 def _seed_insert_worker():
+    global _seed_today_count, _seed_today_date
     while True:
         time.sleep(random.choice(_SEED_INTERVALS))
         if os.environ.get('USE_SEED_DATA', 'false').lower() != 'true':
+            continue
+        today = datetime.now().date()
+        if _seed_today_date != today:
+            _seed_today_date  = today
+            _seed_today_count = 0
+        if _seed_today_count >= 20:
             continue
         try:
             entry = get_random_seed_entry()
@@ -131,6 +149,7 @@ def _seed_insert_worker():
             )
             conn.commit()
             conn.close()
+            _seed_today_count += 1
         except Exception as e:
             print(f"[seed] insert error: {e}")
 
