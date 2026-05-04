@@ -140,9 +140,18 @@ def _seed_insert_worker():
         if _seed_today_count >= 20:
             continue
         try:
-            entry = get_random_seed_entry()
+            cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
             conn = get_conn()
             c = conn.cursor()
+            c.execute(
+                'SELECT COUNT(*) FROM submissions WHERE printed = 0 AND hidden = 0 AND timestamp > %s',
+                (cutoff,)
+            )
+            backlog = c.fetchone()[0]
+            if backlog >= 3:
+                conn.close()
+                continue
+            entry = get_random_seed_entry()
             c.execute(
                 "INSERT INTO submissions (description, latitude, longitude, country, timestamp, printed) VALUES (%s, %s, %s, %s, %s, 0)",
                 (entry["description"], entry["latitude"], entry["longitude"], entry["country"], entry["timestamp"])
