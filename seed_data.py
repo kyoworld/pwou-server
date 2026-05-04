@@ -13,12 +13,26 @@ def _local_time(utc_dt, lat, lon):
     return local_dt.strftime("%Y-%m-%d %H:%M:%S")
 
 country_bounds = {
-    "KO":  {"name": "KOREA",   "lat": (34.0, 38.0),  "lon": (126.0, 129.0)},
-    "RU":  {"name": "RUSSIA",  "lat": (45.0, 70.0),  "lon": (30.0, 135.0)},
-    "USA": {"name": "USA",     "lat": (30.0, 48.0),  "lon": (-120.0, -75.0)},
-    "UK":  {"name": "UK",      "lat": (50.0, 58.0),  "lon": (-5.0, 1.5)},
+    "KO":  {"name": "SOUTH KOREA",   "lat": (34.0, 38.0),  "lon": (126.0, 129.0)},
+    "RU":  {"name": "RUSSIAN FEDERATION",  "lat": (45.0, 70.0),  "lon": (30.0, 135.0)},
+    "USA": {"name": "UNITED STATES",     "lat": (30.0, 48.0),  "lon": (-120.0, -75.0)},
+    "UK":  {"name": "UNITED KINGDOM",      "lat": (50.0, 58.0),  "lon": (-5.0, 1.5)},
     "JP":  {"name": "JAPAN",   "lat": (31.0, 45.0),  "lon": (130.0, 145.0)},
     "GER": {"name": "GERMANY", "lat": (47.5, 54.8),  "lon": (6.0, 14.8)},
+    "CN":  {"name": "CHINA", "lat": (25.0, 45.0),  "lon": (100.0, 125.0)},
+    "FR":  {"name": "FRANCE", "lat": (42.0, 52.0),  "lon": (-5.0, 8.0)},
+    "IT":  {"name": "ITALY", "lat": (35.0, 47.0),  "lon": (10.0, 18.0)},
+    "ES":  {"name": "SPAIN", "lat": (36.0, 44.0),  "lon": (-5.0, 4.0)},
+    "NL":  {"name": "NETHERLANDS", "lat": (50.0, 54.0),  "lon": (4.0, 7.0)},
+    "BE":  {"name": "BELGIUM", "lat": (50.0, 52.0),  "lon": (3.0, 6.0)},
+    "SE":  {"name": "SWEDEN", "lat": (55.0, 68.0),  "lon": (10.0, 24.0)},
+    "NO":  {"name": "NORWAY", "lat": (58.0, 72.0),  "lon": (5.0, 15.0)},
+    "DK":  {"name": "DENMARK", "lat": (54.0, 58.0),  "lon": (8.0, 12.0)},
+    "FI":  {"name": "FINLAND", "lat": (59.0, 70.0),  "lon": (20.0, 32.0)},
+    "IS":  {"name": "ICELAND", "lat": (63.0, 68.0),  "lon": (-25.0, -13.0)},
+    "NO":  {"name": "NORWAY", "lat": (58.0, 72.0),  "lon": (5.0, 15.0)},
+    "DK":  {"name": "DENMARK", "lat": (54.0, 58.0),  "lon": (8.0, 12.0)},
+    "FI":  {"name": "FINLAND", "lat": (59.0, 70.0),  "lon": (20.0, 32.0)},
 }
 
 details_ko = [
