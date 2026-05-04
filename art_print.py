@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import msvcrt
 
 # ================= 설정 구역 =================
-PRINTER_NAME   = "pos76"
+PRINTER_NAME   = "POS-76"
 SERVER_URL     = "https://web-production-a4443.up.railway.app"
 POLL_INTERVAL  = 2               # 대기 항목 없을 때 재확인 간격 (초)
 SEED_INTERVALS = [10, 20, 30, 60]  # 시드 출력 간격 후보 (초)
