@@ -63,9 +63,13 @@ def submit():
     conn.close()
     return jsonify({"status": "ok"})
 
+_seed_printed = set()  # 출력된 시드 ID 추적 (서버 재시작 시 초기화)
+
 @app.route('/pending', methods=['GET'])
 def pending():
     cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+
+    # 실제 제보 중 가장 오래된 미출력 항목
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
     c.execute(
@@ -74,8 +78,29 @@ def pending():
     )
     row = c.fetchone()
     conn.close()
-    if row:
-        return jsonify(dict(row))
+    real = dict(row) if row else None
+
+    use_seed = os.environ.get('USE_SEED_DATA', 'false').lower() == 'true'
+    if not use_seed:
+        if real:
+            return jsonify({**real, "type": "real"})
+        return jsonify(None)
+
+    # 시드 중 아직 출력 안 된 가장 오래된 항목
+    seeds = get_seed_entries()  # 시간순 정렬
+    next_seed = next((s for s in seeds if s['id'] not in _seed_printed), None)
+
+    # 둘 중 timestamp가 더 이른 것 반환
+    if real and next_seed:
+        if real['timestamp'] <= next_seed['timestamp']:
+            return jsonify({**real, "type": "real"})
+        _seed_printed.add(next_seed['id'])
+        return jsonify({**next_seed, "type": "seed"})
+    if real:
+        return jsonify({**real, "type": "real"})
+    if next_seed:
+        _seed_printed.add(next_seed['id'])
+        return jsonify({**next_seed, "type": "seed"})
     return jsonify(None)
 
 @app.route('/mark_printed/<int:submission_id>', methods=['POST'])
