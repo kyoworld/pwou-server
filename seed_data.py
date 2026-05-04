@@ -74,9 +74,7 @@ _SEED_RAW = (
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
-# 전세계에서 드문드문 올리는 느낌: 8~25분 랜덤 간격
-SEED_MIN_INTERVAL = 8 * 60    # 최소 8분
-SEED_MAX_INTERVAL = 25 * 60   # 최대 25분
+SEED_INTERVALS = [10, 40, 60, 180, 300, 480, 600, 900]  # 시드 간격 후보 (초)
 
 def get_seed_entries():
     now = datetime.now()
@@ -109,6 +107,6 @@ def get_seed_entries():
         })
 
         slot_num += 1
-        cursor += interval_rng.randint(SEED_MIN_INTERVAL, SEED_MAX_INTERVAL)
+        cursor += interval_rng.choice(SEED_INTERVALS)
 
     return entries
