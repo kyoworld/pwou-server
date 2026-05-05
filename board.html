@@ -45,19 +45,25 @@ tr:hover td { background:#0a0a0a; }
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+const knownIds = new Set();
 async function load() {
   try {
-    const json = await fetch('/api/submissions').then(r => r.json());
-    const rows = json.data || [];
-    document.getElementById('feed').innerHTML = rows.map(r => `
-      <tr>
-        <td class="country">${String(Math.abs(r.id)).padStart(4,'0')}</td>
-        <td class="time">${esc(r.timestamp) || '-'}</td>
-        <td class="country">${esc((r.country || 'UNKNOWN').toUpperCase())}</td>
-        <td class="coord">${r.latitude != null ? r.latitude.toFixed(4)+' / '+r.longitude.toFixed(4) : '-'}</td>
-        <td class="desc">${esc(r.description)}</td>
-      </tr>
-    `).join('');
+    const json = await fetch('/api/board').then(r => r.json());
+    const rows = json.data || []; // newest-first
+    const feed = document.getElementById('feed');
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      if (knownIds.has(r.id)) continue;
+      knownIds.add(r.id);
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td class="country">' + String(Math.abs(r.id)).padStart(4,'0') + '</td>' +
+        '<td class="time">' + (esc(r.timestamp) || '-') + '</td>' +
+        '<td class="country">' + esc((r.country || 'UNKNOWN').toUpperCase()) + '</td>' +
+        '<td class="coord">' + (r.latitude != null ? r.latitude.toFixed(4)+' / '+r.longitude.toFixed(4) : '-') + '</td>' +
+        '<td class="desc">' + esc(r.description) + '</td>';
+      feed.prepend(tr);
+    }
   } catch (e) { console.error('[load]', e); }
 }
 load();

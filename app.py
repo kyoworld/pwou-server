@@ -116,17 +116,31 @@ def get_submissions():
     pw = request.args.get('pw', '')
     conn = get_conn()
     c = conn.cursor(cursor_factory=RealDictCursor)
-    c.execute('SELECT * FROM submissions ORDER BY id DESC')
+    if pw == ADMIN_PASSWORD:
+        c.execute('SELECT * FROM submissions ORDER BY id DESC')
+    else:
+        c.execute('SELECT * FROM submissions WHERE hidden = 0 ORDER BY id DESC LIMIT 20')
     rows = c.fetchall()
     conn.close()
     result = [dict(r) for r in rows]
     if pw == ADMIN_PASSWORD:
         return jsonify({"auth": True, "data": result})
-    public = [r for r in result if not r.get('hidden')]
     public_fields = [{"id": r["id"], "description": r["description"], "country": r["country"],
                       "timestamp": r["timestamp"], "latitude": r["latitude"], "longitude": r["longitude"]}
-                     for r in public]
+                     for r in result]
     return jsonify({"auth": False, "data": public_fields})
+
+@app.route('/api/board', methods=['GET'])
+def get_board():
+    conn = get_conn()
+    c = conn.cursor(cursor_factory=RealDictCursor)
+    c.execute(
+        'SELECT id, description, country, timestamp, latitude, longitude'
+        ' FROM submissions WHERE hidden = 0 ORDER BY id DESC LIMIT 100'
+    )
+    rows = c.fetchall()
+    conn.close()
+    return jsonify({"data": [dict(r) for r in rows]})
 
 _SEED_INTERVALS = [10, 20, 30, 60]
 

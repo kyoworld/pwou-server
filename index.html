@@ -918,11 +918,17 @@ async function poll() {
 
     }
 
+    while (tape.children.length > 20) {
+
+      tape.removeChild(tape.lastChild);
+
+    }
+
     if (allData.length !== tickerCount) {
 
       tickerCount = allData.length;
 
-      updateTicker(allData.slice(0, 30)); // 최신 30개, newest first
+      updateTicker(allData.slice(0, 20));
 
     }
 
