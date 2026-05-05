@@ -176,9 +176,15 @@ def _seed_insert_worker():
         if os.environ.get('USE_SEED_DATA', 'false').lower() != 'true':
             continue
         try:
-            entry = get_random_seed_entry()
             conn = get_conn()
             c = conn.cursor()
+            c.execute("SELECT COUNT(*) FROM submissions WHERE printed = 0")
+            pending_count = c.fetchone()[0]
+            if pending_count >= 3:
+                conn.close()
+                print(f"[SEED] skip — pending backlog {pending_count} >= 3")
+                continue
+            entry = get_random_seed_entry()
             c.execute(
                 "INSERT INTO submissions (description, latitude, longitude, country, timestamp, printed) VALUES (%s, %s, %s, %s, %s, 0)",
                 (entry["description"], entry["latitude"], entry["longitude"], entry["country"], entry["timestamp"])
@@ -190,6 +196,7 @@ def _seed_insert_worker():
             print(f"[SEED] insert error: {e}")
 
 def _cleanup_worker():
+    print("[CLEANUP] worker started")
     while True:
         try:
             cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
@@ -201,11 +208,15 @@ def _cleanup_worker():
                 FROM submissions WHERE timestamp < %s
                 ON CONFLICT (id) DO NOTHING
             """, (cutoff,))
+            archived = c.rowcount
             c.execute("DELETE FROM submissions WHERE timestamp < %s", (cutoff,))
+            deleted = c.rowcount
             conn.commit()
             conn.close()
-        except Exception:
-            pass
+            if archived or deleted:
+                print(f"[CLEANUP] archived={archived} deleted={deleted} cutoff={cutoff}")
+        except Exception as e:
+            print(f"[CLEANUP] error: {e}")
         time.sleep(600)  # 10분마다 실행
 
 threading.Thread(target=_seed_insert_worker, daemon=True).start()
