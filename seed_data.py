@@ -23,16 +23,18 @@ country_bounds = {
     "FR":  {"name": "FRANCE", "lat": (42.0, 52.0),  "lon": (-5.0, 8.0)},
     "IT":  {"name": "ITALY", "lat": (35.0, 47.0),  "lon": (10.0, 18.0)},
     "ES":  {"name": "SPAIN", "lat": (36.0, 44.0),  "lon": (-5.0, 4.0)},
-    "NL":  {"name": "NETHERLANDS", "lat": (50.0, 54.0),  "lon": (4.0, 7.0)},
     "BE":  {"name": "BELGIUM", "lat": (50.0, 52.0),  "lon": (3.0, 6.0)},
     "SE":  {"name": "SWEDEN", "lat": (55.0, 68.0),  "lon": (10.0, 24.0)},
     "NO":  {"name": "NORWAY", "lat": (58.0, 72.0),  "lon": (5.0, 15.0)},
     "DK":  {"name": "DENMARK", "lat": (54.0, 58.0),  "lon": (8.0, 12.0)},
-    "FI":  {"name": "FINLAND", "lat": (59.0, 70.0),  "lon": (20.0, 32.0)},
     "IS":  {"name": "ICELAND", "lat": (63.0, 68.0),  "lon": (-25.0, -13.0)},
     "NO":  {"name": "NORWAY", "lat": (58.0, 72.0),  "lon": (5.0, 15.0)},
     "DK":  {"name": "DENMARK", "lat": (54.0, 58.0),  "lon": (8.0, 12.0)},
-    "FI":  {"name": "FINLAND", "lat": (59.0, 70.0),  "lon": (20.0, 32.0)},
+    "FI": {"name": "FINLAND",     "lat": (60.0, 70.0), "lon": (24.0, 30.0)},
+    "NL": {"name": "NETHERLANDS", "lat": (51.0, 53.0), "lon": (3.5, 7.0)},
+    "CZ": {"name": "CZECH",       "lat": (48.5, 51.0), "lon": (12.0, 18.5)},
+    "PT": {"name": "PORTUGAL",    "lat": (36.5, 42.0), "lon": (-9.5, -6.0)},
+    "AR": {"name": "ARGENTINA",   "lat": (-55.0, -22.0), "lon": (-73.0, -53.0)},
 }
 
 details_ko = [
@@ -91,11 +93,50 @@ details_en = [
     "System loop detected.\nRepeating identical objects.",
 ]
 
+# 1. 핀란드
+details_fi = [
+    "Bussissa mietin omia asioitani kun huomasin – ikkunassa oleva heijastukseni liikkui eri tahtiin. Käänsin pään, katsoin uudelleen. Normaali. Mutta hetken se selvästi laahasi perässä.",
+]
+
+# 3. 아르헨티나
+details_ar_lat = [
+    "Fui al cajero, saqué plata, guardé el ticket. Diez minutos después me doy cuenta que tengo dos tickets iguales en el bolsillo. Mismo horario, mismo monto, mismo número de transacción. Yo solo fui una vez.",
+]
+
+# 9. 독일
+details_de = [
+    "Ich hab mein Handy auf den Tisch gelegt und bin kurz raus. Als ich wiederkam, lag es auf der gegenüberliegenden Seite. Nicht verschoben – gespiegelt. Genau da, wo es wäre, wenn jemand es umgedreht hätte. Aber ich war allein.",
+]
+
+# 네덜란드
+details_nl = [
+    "Ik liep naar de supermarkt, dezelfde route als altijd. Halverwege stond er ineens een huis dat ik nog nooit had gezien. Gewoon tussen de andere huizen in. Volgende dag was het weg. Ik heb foto's geprobeerd te maken maar ze kwamen wazig uit.",
+]
+# 번역: 항상 가던 길로 슈퍼 걸어가다가 중간에 한 번도 본 적 없는 집이 있었다. 그냥 다른 집들 사이에 끼어서. 다음 날엔 없었다. 사진 찍으려 했는데 다 흐릿하게 나왔다.
+
+# 체코
+details_cz = [
+    "Šel jsem kolem hodinek v centru a zastavily se přesně ve chvíli, kdy jsem je míjel. Otočil jsem se, znovu šly. Zeptal jsem se člověka vedle – říkal, že nic neviděl. Ale stály, to jsem viděl jasně.",
+]
+# 번역: 시내 시계탑 지나가다가 내가 딱 옆에 있는 순간에 시계가 멈췄다. 돌아봤더니 다시 가고 있었다. 옆에 있던 사람한테 물었더니 못 봤다고 했다. 근데 분명히 멈췄다.
+
+# 포르투갈
+details_pt = [
+    "Estava a jantar sozinho e ouvi alguém chamar o meu nome lá fora. Fui ver – ninguém. Voltei para a mesa e a minha comida estava fria como se tivesse passado uma hora. Tinha saído dois minutos.",
+]
+# 번역: 혼자 저녁 먹다가 밖에서 내 이름 부르는 소리가 들렸다. 나가봤더니 아무도 없었다. 돌아왔더니 음식이 한 시간은 지난 것처럼 식어있었다. 나간 건 2분이었는데.
+
 _EN_COUNTRIES = ["USA", "UK", "JP", "GER"]
 
 _SEED_RAW = (
     [("KO", d) for d in details_ko] +
     [("RU", d) for d in details_ru] +
+    [("FI", d) for d in details_fi] +
+    [("NL", d) for d in details_nl] +
+    [("CZ", d) for d in details_cz] +
+    [("PT", d) for d in details_pt] +
+    [("AR", d) for d in details_ar_lat] +
+    [("DE", d) for d in details_de] +
     [(_EN_COUNTRIES[i % len(_EN_COUNTRIES)], d) for i, d in enumerate(details_en)]
 )
 
