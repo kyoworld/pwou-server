@@ -56,6 +56,7 @@ tr.selected-row td { background:#1a1a1a; }
     <div class="stat-item"><span id="pending-count">0</span>PENDING</div>
     <div class="stat-item"><span id="printed-count">0</span>PRINTED</div>
     <div class="stat-item"><span id="hidden-count">0</span>HIDDEN</div>
+    <div class="stat-item"><span id="archived-count">0</span>ARCHIVED</div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="showTab('all')">ALL</div>
@@ -98,6 +99,8 @@ async function reload() {
   const res = await fetch('/api/submissions?pw=' + savedPw);
   const json = await res.json();
   if (json.auth) { allData = json.data; render(); }
+  const stats = await fetch('/api/stats').then(r => r.json()).catch(() => null);
+  if (stats) document.getElementById('archived-count').textContent = stats.total_archived;
 }
 
 async function markPrinted(id) {

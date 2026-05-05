@@ -35,6 +35,16 @@ def init_db():
         c.execute("ALTER TABLE submissions ADD COLUMN hidden INTEGER DEFAULT 0")
     except:
         pass
+    c.execute("""CREATE TABLE IF NOT EXISTS archive (
+        id INTEGER PRIMARY KEY,
+        description TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
+        country TEXT,
+        timestamp TEXT,
+        printed INTEGER DEFAULT 0,
+        hidden INTEGER DEFAULT 0
+    )""")
     conn.commit()
     conn.close()
 
@@ -130,6 +140,17 @@ def get_submissions():
                      for r in result]
     return jsonify({"auth": False, "data": public_fields})
 
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute('SELECT COUNT(*) FROM archive')
+    total_archived = c.fetchone()[0]
+    c.execute('SELECT COUNT(*) FROM submissions')
+    total_active = c.fetchone()[0]
+    conn.close()
+    return jsonify({"total_archived": total_archived, "total_active": total_active})
+
 @app.route('/api/board', methods=['GET'])
 def get_board():
     conn = get_conn()
@@ -164,13 +185,19 @@ def _seed_insert_worker():
         except Exception as e:
             print(f"[SEED] insert error: {e}")
 
-def _auto_hide_worker():
+def _cleanup_worker():
     while True:
         try:
             cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
             conn = get_conn()
             c = conn.cursor()
-            c.execute("UPDATE submissions SET hidden = 1 WHERE hidden = 0 AND timestamp < %s", (cutoff,))
+            c.execute("""
+                INSERT INTO archive (id, description, latitude, longitude, country, timestamp, printed, hidden)
+                SELECT id, description, latitude, longitude, country, timestamp, printed, hidden
+                FROM submissions WHERE timestamp < %s
+                ON CONFLICT (id) DO NOTHING
+            """, (cutoff,))
+            c.execute("DELETE FROM submissions WHERE timestamp < %s", (cutoff,))
             conn.commit()
             conn.close()
         except Exception:
@@ -178,7 +205,7 @@ def _auto_hide_worker():
         time.sleep(600)  # 10분마다 실행
 
 threading.Thread(target=_seed_insert_worker, daemon=True).start()
-threading.Thread(target=_auto_hide_worker, daemon=True).start()
+threading.Thread(target=_cleanup_worker, daemon=True).start()
 
 if __name__ == '__main__':
     init_db()
