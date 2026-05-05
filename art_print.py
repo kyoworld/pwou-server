@@ -142,6 +142,15 @@ def main():
         print("인터넷 연결 확인 후 다시 실행해주세요.")
         input("계속하려면 Enter...")
 
+    # 24시간 초과 항목 일괄 정리
+    try:
+        resp = requests.post(f"{SERVER_URL}/flush_expired", timeout=5).json()
+        flushed = resp.get("flushed", 0)
+        if flushed:
+            print(f"[FLUSH] 24시간 초과 항목 {flushed}건 정리 완료")
+    except Exception as e:
+        print(f"[WARN] flush_expired 실패: {e}")
+
     print("PWOU 프린터 시스템 가동")
     print(f"서버: {SERVER_URL}")
     print(f"프린터: {PRINTER_NAME}")

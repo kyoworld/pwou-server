@@ -79,6 +79,20 @@ def pending():
         return jsonify({**dict(row), "type": "real"})
     return jsonify(None)
 
+@app.route('/flush_expired', methods=['POST'])
+def flush_expired():
+    cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_conn()
+    c = conn.cursor()
+    c.execute(
+        "UPDATE submissions SET printed = 1 WHERE printed = 0 AND timestamp < %s",
+        (cutoff,)
+    )
+    affected = c.rowcount
+    conn.commit()
+    conn.close()
+    return jsonify({"flushed": affected})
+
 @app.route('/mark_printed/<int:submission_id>', methods=['POST'])
 def mark_printed(submission_id):
     conn = get_conn()
