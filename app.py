@@ -31,10 +31,14 @@ def init_db():
         printed INTEGER DEFAULT 0,
         hidden INTEGER DEFAULT 0
     )""")
+    conn.commit()
+
     try:
         c.execute("ALTER TABLE submissions ADD COLUMN hidden INTEGER DEFAULT 0")
-    except:
-        pass
+        conn.commit()
+    except Exception:
+        conn.rollback()
+
     c.execute("""CREATE TABLE IF NOT EXISTS archive (
         id INTEGER PRIMARY KEY,
         description TEXT NOT NULL,
