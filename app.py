@@ -167,7 +167,7 @@ def get_board():
     conn.close()
     return jsonify({"data": [dict(r) for r in rows]})
 
-_SEED_INTERVALS = [10, 20, 30, 60]
+_SEED_INTERVALS = [10, 60, 90, 120, 200, 300]
 
 def _seed_insert_worker():
     print("[SEED] worker started")
